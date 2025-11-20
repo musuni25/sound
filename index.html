@@ -329,12 +329,13 @@
                 this.updateColor();
                 this.baseY = canvas.height - this.radius;
                 this.velocityY = 0;
-                this.velocityX = (Math.random() - 0.5) * 2;
+                this.velocityX = (Math.random() - 0.5) * 2; // 初始水平速度较小
                 this.gravity = 0.3;
                 this.responsiveness = 0.5 + Math.random();
                 this.damping = 0.8 + Math.random() * 0.2;
-                this.returnToBaseSpeed = 0.5 + Math.random() * 1.5; // 回到底部的速度
-                this.isReturning = false;
+                this.energyLoss = 0.95 + Math.random() * 0.04; // 能量损失
+                this.idleTimer = 0; // 空闲计时器
+                this.idleMovement = 0; // 空闲移动状态
             }
             
             updateColor() {
@@ -344,50 +345,61 @@
             }
             
             update(volume) {
-                // 根据音量大小调整小球活动幅度
+                // 根据音量调整活动幅度
                 if (volume > 0.05) {
-                    this.isReturning = false;
+                    // 音量较大时，活动幅度大
+                    const jumpStrength = volume * 25; // 根据音量调整跳跃强度
+                    const horizontalStrength = volume * 6; // 根据音量调整水平移动强度
                     
-                    // 音量越大，活动幅度越大
-                    const intensity = volume * this.responsiveness;
-                    
-                    // 根据音量大小决定跳跃高度和水平移动
-                    if (Math.random() < intensity * 0.8) {
-                        // 音量越大，跳跃越高
-                        this.velocityY = -intensity * 25 - Math.random() * 15;
-                        
-                        // 音量越大，水平移动越快
-                        this.velocityX += (Math.random() - 0.5) * intensity * 8;
-                        this.velocityX = Math.max(-6, Math.min(6, this.velocityX)); // 限制速度范围
+                    // 随机响应 - 不是所有球都同时跳
+                    if (Math.random() < this.responsiveness * volume * 2) {
+                        this.velocityY = -jumpStrength - Math.random() * jumpStrength * 0.5;
+                        this.velocityX += (Math.random() - 0.5) * horizontalStrength;
                     }
+                    
+                    // 重置空闲计时器
+                    this.idleTimer = 0;
+                    this.idleMovement = 0;
                 } else {
-                    // 没有声音时，小球随机回到底部
-                    if (!this.isReturning && this.y < this.baseY - 5) {
-                        this.isReturning = true;
+                    // 音量很小时或没有声音时，小球自由灵活回到底部
+                    this.idleTimer++;
+                    
+                    // 每100帧执行一次随机微小移动
+                    if (this.idleTimer > 100 && Math.random() < 0.02) {
+                        this.idleMovement = (Math.random() - 0.5) * 1.5; // 微小随机移动
+                        this.idleTimer = 0;
                     }
                     
-                    if (this.isReturning) {
-                        // 随机速度回到底部
-                        if (this.y < this.baseY) {
-                            this.y += this.returnToBaseSpeed;
-                            this.velocityY = 0;
-                        } else {
-                            this.y = this.baseY;
-                            this.isReturning = false;
+                    // 应用微小随机移动
+                    if (this.idleMovement !== 0) {
+                        this.velocityX += this.idleMovement * 0.1;
+                        this.idleMovement *= 0.95; // 逐渐减弱
+                        
+                        if (Math.abs(this.idleMovement) < 0.05) {
+                            this.idleMovement = 0;
                         }
                     }
+                    
+                    // 如果没有声音，小球缓慢回到底部
+                    if (volume < 0.01 && this.y < this.baseY - 5) {
+                        // 添加微小的向上力，模拟浮力效果
+                        this.velocityY += 0.1;
+                    }
                 }
                 
-                // 应用物理（除非正在返回底部）
-                if (!this.isReturning) {
-                    this.velocityY += this.gravity;
-                    this.y += this.velocityY;
-                    this.x += this.velocityX;
-                }
+                // 应用物理
+                this.velocityY += this.gravity;
+                this.y += this.velocityY;
+                this.velocityX *= this.energyLoss; // 水平速度逐渐衰减
+                this.x += this.velocityX;
                 
-                // 边界检测
-                if (this.x < this.radius || this.x > canvas.width - this.radius) {
-                    this.velocityX *= -0.8; // 反弹并损失能量
+                // 边界检测和反弹
+                if (this.x < this.radius) {
+                    this.x = this.radius;
+                    this.velocityX = Math.abs(this.velocityX) * this.damping;
+                } else if (this.x > canvas.width - this.radius) {
+                    this.x = canvas.width - this.radius;
+                    this.velocityX = -Math.abs(this.velocityX) * this.damping;
                 }
                 
                 // 地面碰撞
@@ -395,6 +407,10 @@
                     this.y = this.baseY;
                     this.velocityY = -this.velocityY * this.damping;
                     
+                    // 水平速度在地面碰撞时也减弱
+                    this.velocityX *= 0.9;
+                    
+                    // 如果速度很小，停止运动
                     if (Math.abs(this.velocityY) < 0.5) {
                         this.velocityY = 0;
                     }
@@ -403,7 +419,16 @@
                 // 确保小球不会超出画布顶部
                 if (this.y < this.radius) {
                     this.y = this.radius;
-                    this.velocityY = Math.abs(this.velocityY) * 0.5; // 轻微反弹
+                    this.velocityY = Math.abs(this.velocityY) * 0.5;
+                }
+                
+                // 限制最大速度，防止小球飞得太快
+                const maxSpeed = 15;
+                if (Math.abs(this.velocityY) > maxSpeed) {
+                    this.velocityY = Math.sign(this.velocityY) * maxSpeed;
+                }
+                if (Math.abs(this.velocityX) > maxSpeed) {
+                    this.velocityX = Math.sign(this.velocityX) * maxSpeed;
                 }
             }
             
