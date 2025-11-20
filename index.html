@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>声音响应跳动小球 - 增强版</title>
+    <title>声音响应跳动小球</title>
     <style>
         * {
             margin: 0;
@@ -26,7 +26,6 @@
             padding: 20px;
             background: rgba(13, 27, 42, 0.7);
             z-index: 10;
-            backdrop-filter: blur(5px);
             border-bottom: 1px solid rgba(224, 225, 221, 0.1);
         }
         
@@ -36,15 +35,6 @@
             background: linear-gradient(to right, #778da9, #415a77);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.8;
-            max-width: 600px;
-            margin: 0 auto;
-            color: #a8b3cf;
         }
         
         .container {
@@ -66,39 +56,27 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 5.5rem;
+            font-size: 5rem;
             font-weight: bold;
             color: #ff6b6b;
-            text-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 10;
             pointer-events: none;
-            font-family: 'Arial Black', sans-serif;
         }
         
         .warning.show {
             opacity: 1;
-            animation: pulse 0.4s infinite alternate, shake 0.15s infinite alternate;
+            animation: pulse 0.5s infinite alternate;
         }
         
         @keyframes pulse {
             from {
                 transform: translate(-50%, -50%) scale(1);
-                text-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
             }
             to {
-                transform: translate(-50%, -50%) scale(1.2);
-                text-shadow: 0 0 40px rgba(255, 107, 107, 1);
-            }
-        }
-        
-        @keyframes shake {
-            from {
-                transform: translate(-50%, -50%) translateX(-8px);
-            }
-            to {
-                transform: translate(-50%, -50%) translateX(8px);
+                transform: translate(-50%, -50%) scale(1.15);
             }
         }
         
@@ -106,154 +84,88 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(27, 38, 59, 0.6);
+            background: rgba(27, 38, 59, 0.8);
             padding: 15px;
-            border-radius: 12px;
+            border-radius: 10px;
             z-index: 10;
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(119, 141, 169, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         button {
             background: linear-gradient(to right, #415a77, #778da9);
             border: none;
             color: #e0e1dd;
-            padding: 12px 24px;
+            padding: 10px 20px;
             text-align: center;
-            text-decoration: none;
-            display: inline-block;
             font-size: 16px;
             margin: 5px;
             cursor: pointer;
-            border-radius: 30px;
+            border-radius: 5px;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            font-weight: 600;
         }
         
         button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(to right, #4a6590, #8a9cb8);
-        }
-        
-        button:active {
-            transform: translateY(1px);
+            transform: translateY(-2px);
         }
         
         button:disabled {
             background: #3a506b;
-            color: #778da9;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
         }
         
         .instructions {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(27, 38, 59, 0.6);
+            background: rgba(27, 38, 59, 0.8);
             padding: 15px;
-            border-radius: 12px;
-            max-width: 320px;
+            border-radius: 10px;
+            max-width: 300px;
             z-index: 10;
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(119, 141, 169, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        .instructions h3 {
-            margin-bottom: 10px;
-            color: #a8b3cf;
-            font-size: 1.2rem;
-        }
-        
-        .instructions p {
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            color: #c9d1e0;
         }
         
         .volume-meter {
             position: absolute;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 350px;
-            height: 22px;
-            background: rgba(27, 38, 59, 0.6);
-            border-radius: 12px;
+            width: 300px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
             overflow: hidden;
             z-index: 10;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(119, 141, 169, 0.3);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         
         .volume-level {
             height: 100%;
             width: 0%;
-            background: linear-gradient(to right, #778da9, #ff6b6b);
-            border-radius: 12px;
+            background: linear-gradient(to right, #4cc9f0, #f72585);
+            border-radius: 10px;
             transition: width 0.1s;
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
         }
         
-        .volume-labels {
-            display: flex;
-            justify-content: space-between;
-            width: 350px;
+        .status {
             position: absolute;
-            bottom: 58px;
+            bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.85rem;
-            color: rgba(200, 209, 224, 0.8);
-            font-weight: 500;
-        }
-        
-        footer {
             text-align: center;
-            padding: 15px;
-            background: rgba(13, 27, 42, 0.7);
-            font-size: 0.9rem;
-            color: rgba(200, 209, 224, 0.7);
             z-index: 10;
-            border-top: 1px solid rgba(224, 225, 221, 0.1);
         }
         
-        .noise-indicator {
-            position: absolute;
-            bottom: 90px;
-            left: 50%;
-            transform: translateX(-50%);
+        #micStatus {
             color: #ff6b6b;
-            font-size: 1.2rem;
             font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 10;
-            text-shadow: 0 0 10px rgba(255, 107, 107, 0.7);
-        }
-        
-        .noise-indicator.show {
-            opacity: 1;
-            animation: fadeInOut 2s infinite;
-        }
-        
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
     <header>
         <h1>声音响应跳动小球</h1>
-        <p class="subtitle">通过麦克风检测声音，彩色小球会随着音量和频率变化产生动态跳跃效果</p>
+        <p>通过麦克风检测声音，让彩色小球随着音量大小跳动</p>
     </header>
     
     <div class="container">
@@ -264,44 +176,37 @@
         
         <div class="instructions">
             <h3>使用说明</h3>
-            <p>1. 点击"开始监听声音"按钮并允许麦克风访问</p>
-            <p>2. 发出声音观察小球跳动效果</p>
-            <p>3. 声音越大，小球跳得越高，移动越快</p>
-            <p>4. 音量超过阈值时会显示警告和声音提示</p>
+            <p>1. 点击"开始监听声音"按钮</p>
+            <p>2. 允许浏览器访问您的麦克风</p>
+            <p>3. 发出声音观察小球跳动效果</p>
+            <p>4. 声音过大时会显示警告</p>
         </div>
         
-        <div class="volume-labels">
-            <span>安静</span>
-            <span>适中</span>
-            <span>太吵啦！</span>
+        <div class="status">
+            <div id="micStatus">麦克风未启动</div>
         </div>
         <div class="volume-meter">
             <div class="volume-level" id="volumeLevel"></div>
         </div>
         
-        <div id="noiseIndicator" class="noise-indicator">音量过高！</div>
         <div id="warning" class="warning">太吵啦！</div>
         <canvas id="canvas"></canvas>
     </div>
-    
-    <footer>
-        <p>声音响应跳动小球效果 | 使用Web Audio API和Canvas实现 | 按空格键切换监听状态</p>
-    </footer>
 
     <script>
         // 获取DOM元素
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const warning = document.getElementById('warning');
-        const noiseIndicator = document.getElementById('noiseIndicator');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const volumeLevel = document.getElementById('volumeLevel');
+        const micStatus = document.getElementById('micStatus');
         
         // 设置Canvas尺寸
         function resizeCanvas() {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 140;
+            canvas.height = window.innerHeight;
         }
         
         window.addEventListener('resize', resizeCanvas);
@@ -311,172 +216,92 @@
         const colorPalette = [
             '#778da9', '#6a7f9b', '#5d718d', '#51637f', '#445571',
             '#9fb4ce', '#8fa4be', '#7f94ae', '#6f849e', '#5f748e',
-            '#b0c4de', '#a0b4ce', '#90a4be', '#8094ae', '#70849e',
-            '#c1d4eb', '#b1c4db', '#a1b4cb', '#91a4bb', '#8194ab',
-            '#d2e5f8', '#c2d5e8', '#b2c5d8', '#a2b5c8', '#92a5b8'
+            '#b0c4de', '#a0b4ce', '#90a4be', '#8094ae', '#70849e'
         ];
         
         // 小球类
         class Ball {
             constructor() {
-                this.radius = 12 + Math.random() * 30; // 随机大小
-                this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
-                this.y = canvas.height - this.radius; // 初始位置在底部
+                this.radius = 15 + Math.random() * 25;
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + this.radius; // 从底部开始
                 
-                // 随机选择灰蓝色调
                 this.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                
-                this.baseY = canvas.height - this.radius; // 底部位置
-                this.velocity = 0;
-                this.gravity = 0.2 + Math.random() * 0.3; // 随机重力
-                this.horizontalSpeed = (Math.random() - 0.5) * 4; // 随机水平速度
-                this.responsiveness = 0.3 + Math.random() * 0.7; // 随机响应度
-                this.bounceFactor = 0.6 + Math.random() * 0.3; // 随机弹性
-                this.rotation = 0;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.1; // 随机旋转速度
-                this.pulse = 0;
-                this.pulseSpeed = 0.05 + Math.random() * 0.05; // 随机脉动速度
-                
-                // 小球的个性化行为参数
-                this.behaviorType = Math.floor(Math.random() * 3); // 0: 常规, 1: 轻盈, 2: 沉重
-                if (this.behaviorType === 1) {
-                    this.gravity *= 0.7;
-                    this.responsiveness *= 1.3;
-                } else if (this.behaviorType === 2) {
-                    this.gravity *= 1.3;
-                    this.responsiveness *= 0.7;
-                }
+                this.baseY = canvas.height - this.radius;
+                this.velocityY = 0;
+                this.velocityX = (Math.random() - 0.5) * 4;
+                this.gravity = 0.3;
+                this.responsiveness = 0.5 + Math.random();
+                this.damping = 0.8 + Math.random() * 0.2;
             }
             
-            update(volume, frequencyData) {
-                // 根据音量计算目标高度
-                const targetHeightFactor = volume > 0.03 ? volume * 0.9 : 0;
-                const targetHeight = this.baseY - (canvas.height * targetHeightFactor * this.responsiveness);
-                
-                // 根据频率数据影响水平移动
-                if (frequencyData && frequencyData.length > 0) {
-                    const freqIndex = Math.floor(Math.random() * frequencyData.length);
-                    const freqInfluence = frequencyData[freqIndex] / 255;
-                    this.horizontalSpeed += (Math.random() - 0.5) * freqInfluence * 2;
-                    this.horizontalSpeed = Math.max(-5, Math.min(5, this.horizontalSpeed)); // 限制速度范围
-                }
-                
-                // 水平移动
-                this.x += this.horizontalSpeed;
-                
-                // 边界检测和反弹
-                if (this.x < this.radius) {
-                    this.x = this.radius;
-                    this.horizontalSpeed = Math.abs(this.horizontalSpeed) * this.bounceFactor;
-                } else if (this.x > canvas.width - this.radius) {
-                    this.x = canvas.width - this.radius;
-                    this.horizontalSpeed = -Math.abs(this.horizontalSpeed) * this.bounceFactor;
-                }
-                
-                // 垂直运动 - 根据目标高度调整
-                if (this.y > targetHeight) {
-                    // 向上运动或下落减速
-                    const acceleration = (this.y - targetHeight) * 0.05;
-                    this.velocity -= acceleration;
-                }
-                
-                // 应用重力
-                this.velocity += this.gravity;
-                this.y += this.velocity;
-                
-                // 地面碰撞检测
-                if (this.y > this.baseY) {
-                    this.y = this.baseY;
-                    this.velocity = -this.velocity * this.bounceFactor; // 反弹
-                    
-                    // 添加一些随机性
-                    if (Math.abs(this.velocity) < 0.5) {
-                        this.velocity = 0;
+            update(volume) {
+                // 响应音量变化
+                if (volume > 0.05) {
+                    // 随机响应 - 不是所有球都同时跳
+                    if (Math.random() < this.responsiveness * volume) {
+                        this.velocityY = -volume * 20 - Math.random() * 10;
                     }
                 }
                 
-                // 天花板碰撞检测
-                if (this.y < this.radius) {
-                    this.y = this.radius;
-                    this.velocity = Math.abs(this.velocity) * 0.5; // 轻微反弹
+                // 应用物理
+                this.velocityY += this.gravity;
+                this.y += this.velocityY;
+                this.x += this.velocityX;
+                
+                // 边界检测
+                if (this.x < this.radius || this.x > canvas.width - this.radius) {
+                    this.velocityX *= -1;
                 }
                 
-                // 更新旋转和脉动
-                this.rotation += this.rotationSpeed;
-                this.pulse += this.pulseSpeed;
+                // 地面碰撞
+                if (this.y > this.baseY) {
+                    this.y = this.baseY;
+                    this.velocityY = -this.velocityY * this.damping;
+                    
+                    if (Math.abs(this.velocityY) < 1) {
+                        this.velocityY = 0;
+                    }
+                }
+                
+                // 确保小球不会超出画布顶部
+                if (this.y < this.radius) {
+                    this.y = this.radius;
+                    this.velocityY = 0;
+                }
             }
             
             draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                
-                // 脉动效果
-                const pulseScale = 1 + Math.sin(this.pulse) * 0.1;
-                ctx.scale(pulseScale, pulseScale);
-                
-                // 绘制小球主体
                 ctx.beginPath();
-                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 
-                // 创建径向渐变
+                // 创建渐变效果
                 const gradient = ctx.createRadialGradient(
-                    -this.radius/3, -this.radius/3, 1,
-                    0, 0, this.radius
+                    this.x - this.radius/3, this.y - this.radius/3, 1,
+                    this.x, this.y, this.radius
                 );
-                gradient.addColorStop(0, lightenColor(this.color, 40));
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
                 gradient.addColorStop(0.7, this.color);
-                gradient.addColorStop(1, darkenColor(this.color, 20));
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
                 
                 ctx.fillStyle = gradient;
                 ctx.fill();
                 
                 // 添加高光
                 ctx.beginPath();
-                ctx.arc(-this.radius/4, -this.radius/4, this.radius/3, 0, Math.PI * 2);
+                ctx.arc(this.x - this.radius/4, this.y - this.radius/4, this.radius/4, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.fill();
-                
-                ctx.restore();
-                
-                // 添加阴影
-                ctx.beginPath();
-                ctx.arc(this.x, this.y + 3, this.radius * 0.9, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
                 ctx.fill();
             }
         }
         
-        // 颜色辅助函数
-        function lightenColor(color, percent) {
-            const num = parseInt(color.slice(1), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = Math.min(255, (num >> 16) + amt);
-            const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
-            const B = Math.min(255, (num & 0x0000FF) + amt);
-            return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
-        }
-        
-        function darkenColor(color, percent) {
-            const num = parseInt(color.slice(1), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = Math.max(0, (num >> 16) - amt);
-            const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
-            const B = Math.max(0, (num & 0x0000FF) - amt);
-            return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
-        }
-        
         // 创建小球
         const balls = [];
-        let frameCount = 0;
         let currentVolume = 0;
-        let currentFrequencyData = null;
-        let isTooNoisy = false;
-        let shushTimeout = null;
         
         function createBalls() {
             balls.length = 0;
-            const ballCount = 60; // 增加小球数量
+            const ballCount = 50;
             
             for (let i = 0; i < ballCount; i++) {
                 balls.push(new Ball());
@@ -484,116 +309,86 @@
         }
         
         createBalls();
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-            createBalls();
-        });
+        window.addEventListener('resize', createBalls);
         
-        // 音频分析
-        let audioContext;
-        let analyser;
-        let microphone;
-        let javascriptNode;
+        // 音频分析变量
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
         let isListening = false;
-        
-        // "嘘"声音效
-        function playShushSound() {
-            if (!audioContext) return;
-            
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            // 设置声音参数
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 2);
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 2);
-        }
         
         // 开始监听声音
         startBtn.addEventListener('click', async () => {
             if (isListening) return;
             
             try {
-                // 获取麦克风权限
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                micStatus.textContent = "请求麦克风权限...";
+                micStatus.style.color = "#ffa500";
                 
-                // 创建音频上下文
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    } 
+                });
+                
+                micStatus.textContent = "麦克风已启动";
+                micStatus.style.color = "#4ade80";
+                
+                audioContext = new AudioContext();
                 analyser = audioContext.createAnalyser();
                 microphone = audioContext.createMediaStreamSource(stream);
                 
-                // 连接分析器
                 microphone.connect(analyser);
-                analyser.fftSize = 512; // 增加FFT大小以获取更多频率数据
+                analyser.fftSize = 256;
                 
-                // 创建JavaScript节点处理音频数据
-                javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-                analyser.connect(javascriptNode);
-                javascriptNode.connect(audioContext.destination);
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
                 
                 // 处理音频数据
-                javascriptNode.onaudioprocess = function() {
-                    const array = new Uint8Array(analyser.frequencyBinCount);
-                    analyser.getByteFrequencyData(array);
+                function processAudio() {
+                    if (!isListening) return;
                     
-                    // 计算平均音量
-                    let values = 0;
-                    for (let i = 0; i < array.length; i++) {
-                        values += array[i];
+                    analyser.getByteFrequencyData(dataArray);
+                    
+                    // 计算音量
+                    let sum = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        sum += dataArray[i];
                     }
-                    const average = values / array.length;
+                    currentVolume = (sum / bufferLength) / 256;
                     
-                    // 标准化音量值 (0-1)
-                    currentVolume = average / 256;
-                    
-                    // 保存频率数据用于影响小球行为
-                    currentFrequencyData = new Uint8Array(array);
-                    
-                    // 平滑音量变化
-                    currentVolume = Math.max(currentVolume, 0.02);
-                    
-                    // 更新音量指示器
+                    // 更新UI
                     volumeLevel.style.width = `${Math.min(currentVolume * 100, 100)}%`;
                     
-                    // 检查是否需要显示警告 (降低阈值到0.5)
-                    if (currentVolume > 0.5) {
-                        if (!isTooNoisy) {
-                            isTooNoisy = true;
-                            warning.classList.add('show');
-                            noiseIndicator.classList.add('show');
-                            
-                            // 播放"嘘"声
-                            if (shushTimeout) clearTimeout(shushTimeout);
-                            playShushSound();
-                            shushTimeout = setTimeout(() => {
-                                noiseIndicator.classList.remove('show');
-                            }, 2000);
-                        }
+                    if (currentVolume > 0.4) { // 降低阈值
+                        warning.classList.add('show');
                     } else {
-                        if (isTooNoisy) {
-                            isTooNoisy = false;
-                            warning.classList.remove('show');
-                            noiseIndicator.classList.remove('show');
-                        }
+                        warning.classList.remove('show');
                     }
-                };
+                    
+                    requestAnimationFrame(processAudio);
+                }
                 
                 isListening = true;
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
                 
-            } catch (err) {
-                console.error('获取麦克风权限失败:', err);
-                alert('无法访问麦克风，请确保已授予权限。错误: ' + err.message);
+                processAudio();
+                
+            } catch (error) {
+                console.error('麦克风访问错误:', error);
+                micStatus.textContent = "麦克风访问失败";
+                micStatus.style.color = "#ff6b6b";
+                
+                if (error.name === 'NotAllowedError') {
+                    alert('请允许麦克风访问权限，然后刷新页面重试。');
+                } else if (error.name === 'NotFoundError') {
+                    alert('未找到麦克风设备，请检查连接。');
+                } else {
+                    alert('无法访问麦克风: ' + error.message);
+                }
             }
         });
         
@@ -601,10 +396,7 @@
         stopBtn.addEventListener('click', () => {
             if (!isListening) return;
             
-            if (javascriptNode) {
-                javascriptNode.disconnect();
-                javascriptNode = null;
-            }
+            isListening = false;
             
             if (microphone) {
                 microphone.disconnect();
@@ -612,61 +404,44 @@
             }
             
             if (audioContext) {
-                audioContext.close();
-                audioContext = null;
+                audioContext.close().then(() => {
+                    audioContext = null;
+                });
             }
             
-            isListening = false;
             startBtn.disabled = false;
             stopBtn.disabled = true;
-            isTooNoisy = false;
-            
-            // 隐藏警告和重置音量指示器
-            warning.classList.remove('show');
-            noiseIndicator.classList.remove('show');
+            micStatus.textContent = "麦克风已停止";
+            micStatus.style.color = "#ff6b6b";
             volumeLevel.style.width = '0%';
+            warning.classList.remove('show');
             currentVolume = 0;
-            currentFrequencyData = null;
-            
-            if (shushTimeout) {
-                clearTimeout(shushTimeout);
-                shushTimeout = null;
-            }
         });
         
         // 动画循环
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // 绘制渐变背景
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#0d1b2a');
-            gradient.addColorStop(1, '#1b263b');
-            ctx.fillStyle = gradient;
+            // 绘制半透明背景
+            ctx.fillStyle = 'rgba(13, 27, 42, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // 更新和绘制小球
             balls.forEach(ball => {
-                ball.update(currentVolume, currentFrequencyData);
+                ball.update(currentVolume);
                 ball.draw();
             });
             
-            frameCount++;
             requestAnimationFrame(animate);
         }
         
         // 初始化
         animate();
         
-        // 添加键盘快捷键
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                if (isListening) {
-                    stopBtn.click();
-                } else {
-                    startBtn.click();
-                }
+        // 安全地处理页面关闭
+        window.addEventListener('beforeunload', () => {
+            if (isListening) {
+                stopBtn.click();
             }
         });
     </script>
