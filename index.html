@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>声音响应式跳动小球</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        header {
+            padding: 20px 0;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 150, 255, 0.7);
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .instructions p {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        
+        .volume-meter {
+            width: 300px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 20px auto;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .volume-level {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #00b09b, #96c93d, #f9d423, #ff4e50);
+            border-radius: 10px;
+            transition: width 0.2s;
+        }
+        
+        .volume-threshold {
+            position: absolute;
+            height: 100%;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.7);
+            right: 20%;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .noise-alert {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            font-weight: bold;
+            color: #ff4e50;
+            text-shadow: 0 0 20px rgba(255, 78, 80, 0.7);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .noise-alert.visible {
+            opacity: 1;
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+        
+        footer {
+            padding: 20px 0;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .mic-status {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+        
+        .start-button {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .start-button:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>声音响应式跳动小球</h1>
+            <div class="instructions">
+                <p>点击"开始声音检测"按钮并允许麦克风访问权限</p>
+                <p>对着麦克风发出声音，观察底部小球的跳动效果</p>
+                <p>当声音过大时，会显示"太吵啦！"的警告</p>
+            </div>
+            
+            <button class="start-button" id="startButton">开始声音检测</button>
+            
+            <div class="volume-meter">
+                <div class="volume-level" id="volumeLevel"></div>
+                <div class="volume-threshold" title="噪音阈值"></div>
+            </div>
+            <div class="mic-status" id="micStatus">麦克风未启用</div>
+        </header>
+        
+        <div class="canvas-container">
+            <canvas id="ballCanvas"></canvas>
+            <div class="noise-alert" id="noiseAlert">太吵啦！</div>
+        </div>
+        
+        <footer>
+            <p>声音响应式跳动小球效果 | 使用Web Audio API实现</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const canvas = document.getElementById('ballCanvas');
+            const ctx = canvas.getContext('2d');
+            const startButton = document.getElementById('startButton');
+            const volumeLevel = document.getElementById('volumeLevel');
+            const micStatus = document.getElementById('micStatus');
+            const noiseAlert = document.getElementById('noiseAlert');
+            
+            // 设置Canvas尺寸
+            function resizeCanvas() {
+                canvas.width = Math.min(window.innerWidth - 40, 1000);
+                canvas.height = Math.min(window.innerHeight * 0.4, 400);
+                initBalls();
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            
+            // 小球参数
+            const ballCount = 15;
+            let balls = [];
+            const noiseThreshold = 0.7; // 噪音阈值 (0-1)
+            let currentVolume = 0;
+            let audioContext;
+            let analyser;
+            let microphone;
+            let javascriptNode;
+            let isListening = false;
+            
+            // 初始化小球
+            function initBalls() {
+                balls = [];
+                const ballRadius = Math.min(canvas.width / ballCount / 3, 30);
+                
+                for (let i = 0; i < ballCount; i++) {
+                    balls.push({
+                        x: (i + 1) * (canvas.width / (ballCount + 1)),
+                        y: canvas.height - ballRadius,
+                        radius: ballRadius,
+                        baseY: canvas.height - ballRadius,
+                        color: `hsl(${i * (360 / ballCount)}, 70%, 60%)`,
+                        speed: 0,
+                        jumping: false,
+                        jumpPower: 0
+                    });
+                }
+            }
+            
+            // 绘制小球
+            function drawBalls() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制底部阴影
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
+                
+                balls.forEach(ball => {
+                    // 绘制阴影
+                    ctx.beginPath();
+                    ctx.ellipse(ball.x, ball.baseY + 5, ball.radius * 0.8, ball.radius * 0.3, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                    ctx.fill();
+                    
+                    // 绘制小球
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+                    
+                    // 创建渐变效果
+                    const gradient = ctx.createRadialGradient(
+                        ball.x - ball.radius/3, ball.y - ball.radius/3, 1,
+                        ball.x, ball.y, ball.radius
+                    );
+                    gradient.addColorStop(0, ball.color);
+                    gradient.addColorStop(1, adjustColor(ball.color, -30));
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    
+                    // 添加高光
+                    ctx.beginPath();
+                    ctx.arc(ball.x - ball.radius/3, ball.y - ball.radius/3, ball.radius/3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.fill();
+                });
+            }
+            
+            // 调整颜色亮度
+            function adjustColor(color, amount) {
+                return color.replace(/hsl\((\d+), (\d+)%, (\d+)%\)/, function(match, h, s, l) {
+                    let lightness = parseInt(l) + amount;
+                    lightness = Math.max(0, Math.min(100, lightness));
+                    return `hsl(${h}, ${s}%, ${lightness}%)`;
+                });
+            }
+            
+            // 更新小球位置
+            function updateBalls() {
+                balls.forEach(ball => {
+                    // 应用重力
+                    ball.speed += 0.5;
+                    ball.y += ball.speed;
+                    
+                    // 如果小球落到地面
+                    if (ball.y > ball.baseY) {
+                        ball.y = ball.baseY;
+                        ball.speed = 0;
+                        ball.jumping = false;
+                    }
+                });
+            }
+            
+            // 让小球跳动
+            function jumpBalls(power) {
+                balls.forEach(ball => {
+                    if (!ball.jumping) {
+                        ball.jumping = true;
+                        ball.speed = -power * 15;
+                    }
+                });
+            }
+            
+            // 动画循环
+            function animate() {
+                updateBalls();
+                drawBalls();
+                requestAnimationFrame(animate);
+            }
+            
+            // 开始动画
+            animate();
+            
+            // 初始化音频分析
+            function initAudio() {
+                try {
+                    // 创建音频上下文
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 256;
+                    
+                    // 获取麦克风输入
+                    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                        .then(function(stream) {
+                            microphone = audioContext.createMediaStreamSource(stream);
+                            javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+                            
+                            microphone.connect(analyser);
+                            analyser.connect(javascriptNode);
+                            javascriptNode.connect(audioContext.destination);
+                            
+                            javascriptNode.onaudioprocess = function() {
+                                const array = new Uint8Array(analyser.frequencyBinCount);
+                                analyser.getByteFrequencyData(array);
+                                
+                                let values = 0;
+                                for (let i = 0; i < array.length; i++) {
+                                    values += array[i];
+                                }
+                                
+                                const average = values / array.length;
+                                currentVolume = average / 256; // 转换为0-1范围
+                                
+                                // 更新音量显示
+                                volumeLevel.style.width = (currentVolume * 100) + '%';
+                                
+                                // 如果音量超过阈值，显示警告
+                                if (currentVolume > noiseThreshold) {
+                                    noiseAlert.classList.add('visible');
+                                } else {
+                                    noiseAlert.classList.remove('visible');
+                                }
+                                
+                                // 根据音量让小球跳动
+                                jumpBalls(currentVolume);
+                            };
+                            
+                            micStatus.textContent = "麦克风已启用 - 正在监听声音";
+                            micStatus.style.background = "rgba(0, 255, 0, 0.2)";
+                            isListening = true;
+                        })
+                        .catch(function(err) {
+                            console.error("获取麦克风权限失败: ", err);
+                            micStatus.textContent = "无法访问麦克风，请检查权限设置";
+                            micStatus.style.background = "rgba(255, 0, 0, 0.2)";
+                        });
+                } catch (e) {
+                    console.error("音频初始化失败: ", e);
+                    micStatus.textContent = "您的浏览器不支持音频功能";
+                    micStatus.style.background = "rgba(255, 0, 0, 0.2)";
+                }
+            }
+            
+            // 开始按钮点击事件
+            startButton.addEventListener('click', function() {
+                if (!isListening) {
+                    initAudio();
+                    startButton.textContent = "声音检测中...";
+                    startButton.disabled = true;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
