@@ -226,6 +226,20 @@
             margin: 5px 0;
         }
         
+        .github-fix {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background: rgba(100, 100, 255, 0.1);
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .github-fix h3 {
+            color: #6b6bff;
+            margin-bottom: 10px;
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
@@ -257,6 +271,16 @@
                 <p>当声音过大时，会显示"太吵啦！"的警告</p>
             </div>
             
+            <div class="github-fix">
+                <h3>GitHub Pages 特别说明</h3>
+                <p>由于GitHub Pages的安全策略，麦克风权限请求可能需要：</p>
+                <ul>
+                    <li>使用 <strong>Chrome 或 Edge</strong> 浏览器</li>
+                    <li>刷新页面后重试</li>
+                    <li>确保URL以 <strong>https://</strong> 开头</li>
+                </ul>
+            </div>
+            
             <div class="volume-controls">
                 <button class="start-button" id="startButton">开始声音检测</button>
                 
@@ -277,6 +301,7 @@
                     <li>检查浏览器地址栏的麦克风权限设置（点击锁形图标）</li>
                     <li>确保没有其他程序占用麦克风（如Zoom、微信等）</li>
                     <li>尝试使用Chrome或Edge浏览器</li>
+                    <li>如果仍然不行，请下载HTML文件在本地运行</li>
                 </ul>
             </div>
         </header>
@@ -293,6 +318,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，初始化中...');
+            
             // 获取DOM元素
             const canvas = document.getElementById('ballCanvas');
             const ctx = canvas.getContext('2d');
@@ -305,6 +332,7 @@
             function resizeCanvas() {
                 canvas.width = Math.min(window.innerWidth - 40, 1000);
                 canvas.height = Math.min(window.innerHeight * 0.4, 400);
+                console.log('Canvas尺寸设置:', canvas.width, 'x', canvas.height);
                 initBalls();
             }
             
@@ -321,6 +349,7 @@
             let microphone = null;
             let isListening = false;
             let animationId = null;
+            let audioStream = null;
             
             // 初始化小球
             function initBalls() {
@@ -338,6 +367,7 @@
                         jumping: false
                     });
                 }
+                console.log('小球初始化完成，数量:', balls.length);
             }
             
             // 绘制小球
@@ -422,27 +452,44 @@
             
             // 开始动画
             animate();
+            console.log('动画循环启动');
+            
+            // 检查浏览器支持
+            function checkBrowserSupport() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    micStatus.textContent = "您的浏览器不支持麦克风功能";
+                    micStatus.className = "mic-status error";
+                    startButton.disabled = true;
+                    return false;
+                }
+                return true;
+            }
             
             // 初始化音频分析
             async function initAudio() {
+                console.log('开始初始化音频...');
+                
+                if (!checkBrowserSupport()) {
+                    return;
+                }
+                
                 try {
-                    // 检查浏览器支持
-                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                        throw new Error('您的浏览器不支持获取麦克风权限');
-                    }
-                    
                     // 更新麦克风状态
                     micStatus.textContent = "请求麦克风权限...";
                     micStatus.className = "mic-status";
                     
-                    // 获取麦克风输入
-                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                    // 获取麦克风输入 - 这是关键步骤
+                    console.log('请求麦克风权限...');
+                    audioStream = await navigator.mediaDevices.getUserMedia({ 
                         audio: {
                             echoCancellation: true,
                             noiseSuppression: true,
                             autoGainControl: false
-                        } 
+                        },
+                        video: false
                     });
+                    
+                    console.log('麦克风权限获取成功');
                     
                     // 创建音频上下文
                     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -451,7 +498,7 @@
                     analyser.smoothingTimeConstant = 0.8;
                     
                     // 创建麦克风源
-                    microphone = audioContext.createMediaStreamSource(stream);
+                    microphone = audioContext.createMediaStreamSource(audioStream);
                     microphone.connect(analyser);
                     
                     // 开始处理音频数据
@@ -460,6 +507,8 @@
                     micStatus.textContent = "麦克风已启用 - 正在监听声音";
                     micStatus.className = "mic-status active";
                     isListening = true;
+                    
+                    console.log('音频系统初始化完成');
                     
                 } catch (error) {
                     console.error("音频初始化失败: ", error);
@@ -471,6 +520,10 @@
                         errorMessage = "未找到麦克风设备";
                     } else if (error.name === 'NotSupportedError') {
                         errorMessage = "您的浏览器不支持此功能";
+                    } else if (error.name === 'NotReadableError') {
+                        errorMessage = "麦克风被其他程序占用";
+                    } else if (error.name === 'AbortError') {
+                        errorMessage = "麦克风访问被中止";
                     }
                     
                     micStatus.textContent = errorMessage;
@@ -478,7 +531,7 @@
                     
                     // 重新启用按钮以便用户可以重试
                     startButton.disabled = false;
-                    startButton.textContent = "开始声音检测";
+                    startButton.textContent = "重试声音检测";
                 }
             }
             
@@ -497,7 +550,7 @@
                         sum += dataArray[i];
                     }
                     
-                    currentVolume = sum / dataArray.length / 256; // 转换为0-1范围
+                    currentVolume = sum / dataArray.length / 256;
                     
                     // 更新音量显示
                     volumeLevel.style.width = (currentVolume * 100) + '%';
@@ -510,35 +563,66 @@
                     }
                     
                     // 根据音量让小球跳动
-                    if (currentVolume > 0.1) { // 添加最小音量阈值避免微小噪音触发
+                    if (currentVolume > 0.1) {
                         jumpBalls(currentVolume);
                     }
                     
                     // 继续分析
-                    requestAnimationFrame(analyse);
+                    if (isListening) {
+                        requestAnimationFrame(analyse);
+                    }
                 }
                 
                 analyse();
             }
             
+            // 清理资源
+            function cleanup() {
+                console.log('清理音频资源...');
+                isListening = false;
+                
+                if (audioStream) {
+                    audioStream.getTracks().forEach(track => track.stop());
+                    audioStream = null;
+                }
+                
+                if (audioContext) {
+                    audioContext.close();
+                    audioContext = null;
+                }
+                
+                analyser = null;
+                microphone = null;
+            }
+            
             // 开始按钮点击事件
             startButton.addEventListener('click', function() {
+                console.log('开始按钮被点击');
                 if (!isListening) {
                     initAudio();
                     startButton.textContent = "初始化中...";
                     startButton.disabled = true;
+                    
+                    // 3秒后如果还没成功，启用重试
+                    setTimeout(() => {
+                        if (!isListening && startButton.disabled) {
+                            startButton.disabled = false;
+                            startButton.textContent = "重试声音检测";
+                            micStatus.textContent = "初始化超时，请重试";
+                            micStatus.className = "mic-status error";
+                        }
+                    }, 3000);
                 }
             });
             
             // 页面卸载时清理资源
-            window.addEventListener('beforeunload', function() {
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
-                }
-                if (audioContext) {
-                    audioContext.close();
-                }
-            });
+            window.addEventListener('beforeunload', cleanup);
+            window.addEventListener('pagehide', cleanup);
+            
+            // 检查初始支持状态
+            checkBrowserSupport();
+            
+            console.log('初始化完成，等待用户交互');
         });
     </script>
 </body>
