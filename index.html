@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>声音响应跳动小球 - 改进版</title>
+    <title>声音响应跳动小球 - 增强版</title>
     <style>
         * {
             margin: 0;
@@ -13,8 +13,8 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: white;
+            background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);
+            color: #e0e1dd;
             min-height: 100vh;
             overflow: hidden;
             display: flex;
@@ -24,17 +24,19 @@
         header {
             text-align: center;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(13, 27, 42, 0.7);
             z-index: 10;
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(224, 225, 221, 0.1);
         }
         
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
-            background: linear-gradient(to right, #4cc9f0, #f72585);
+            background: linear-gradient(to right, #778da9, #415a77);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
         
         .subtitle {
@@ -42,6 +44,7 @@
             opacity: 0.8;
             max-width: 600px;
             margin: 0 auto;
+            color: #a8b3cf;
         }
         
         .container {
@@ -63,36 +66,39 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 5rem;
+            font-size: 5.5rem;
             font-weight: bold;
-            color: #ff4757;
-            text-shadow: 0 0 20px rgba(255, 71, 87, 0.8);
+            color: #ff6b6b;
+            text-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 10;
             pointer-events: none;
+            font-family: 'Arial Black', sans-serif;
         }
         
         .warning.show {
             opacity: 1;
-            animation: pulse 0.5s infinite alternate, shake 0.2s infinite alternate;
+            animation: pulse 0.4s infinite alternate, shake 0.15s infinite alternate;
         }
         
         @keyframes pulse {
             from {
                 transform: translate(-50%, -50%) scale(1);
+                text-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
             }
             to {
-                transform: translate(-50%, -50%) scale(1.15);
+                transform: translate(-50%, -50%) scale(1.2);
+                text-shadow: 0 0 40px rgba(255, 107, 107, 1);
             }
         }
         
         @keyframes shake {
             from {
-                transform: translate(-50%, -50%) translateX(-5px);
+                transform: translate(-50%, -50%) translateX(-8px);
             }
             to {
-                transform: translate(-50%, -50%) translateX(5px);
+                transform: translate(-50%, -50%) translateX(8px);
             }
         }
         
@@ -100,19 +106,20 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(27, 38, 59, 0.6);
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 12px;
             z-index: 10;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(119, 141, 169, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         button {
-            background: linear-gradient(to right, #4cc9f0, #4361ee);
+            background: linear-gradient(to right, #415a77, #778da9);
             border: none;
-            color: white;
-            padding: 10px 20px;
+            color: #e0e1dd;
+            padding: 12px 24px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
@@ -122,16 +129,23 @@
             border-radius: 30px;
             transition: all 0.3s;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
         }
         
         button:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, #4a6590, #8a9cb8);
+        }
+        
+        button:active {
+            transform: translateY(1px);
         }
         
         button:disabled {
-            background: #6c757d;
-            cursor: not-allow;
+            background: #3a506b;
+            color: #778da9;
+            cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
@@ -140,67 +154,106 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(27, 38, 59, 0.6);
             padding: 15px;
-            border-radius: 10px;
-            max-width: 300px;
+            border-radius: 12px;
+            max-width: 320px;
             z-index: 10;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(119, 141, 169, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         .instructions h3 {
             margin-bottom: 10px;
-            color: #4cc9f0;
+            color: #a8b3cf;
+            font-size: 1.2rem;
+        }
+        
+        .instructions p {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: #c9d1e0;
         }
         
         .volume-meter {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            width: 300px;
-            height: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
+            width: 350px;
+            height: 22px;
+            background: rgba(27, 38, 59, 0.6);
+            border-radius: 12px;
             overflow: hidden;
             z-index: 10;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(119, 141, 169, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         
         .volume-level {
             height: 100%;
             width: 0%;
-            background: linear-gradient(to right, #4cc9f0, #f72585);
-            border-radius: 10px;
+            background: linear-gradient(to right, #778da9, #ff6b6b);
+            border-radius: 12px;
             transition: width 0.1s;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
         }
         
         .volume-labels {
             display: flex;
             justify-content: space-between;
-            width: 300px;
+            width: 350px;
             position: absolute;
-            bottom: 45px;
+            bottom: 58px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            color: rgba(200, 209, 224, 0.8);
+            font-weight: 500;
         }
         
         footer {
             text-align: center;
             padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(13, 27, 42, 0.7);
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(200, 209, 224, 0.7);
             z-index: 10;
+            border-top: 1px solid rgba(224, 225, 221, 0.1);
+        }
+        
+        .noise-indicator {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff6b6b;
+            font-size: 1.2rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.7);
+        }
+        
+        .noise-indicator.show {
+            opacity: 1;
+            animation: fadeInOut 2s infinite;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
     <header>
         <h1>声音响应跳动小球</h1>
-        <p class="subtitle">通过麦克风检测声音，让彩色小球随着音量大小跳动</p>
+        <p class="subtitle">通过麦克风检测声音，彩色小球会随着音量和频率变化产生动态跳跃效果</p>
     </header>
     
     <div class="container">
@@ -211,10 +264,10 @@
         
         <div class="instructions">
             <h3>使用说明</h3>
-            <p>1. 点击"开始监听声音"按钮</p>
-            <p>2. 允许浏览器访问您的麦克风</p>
-            <p>3. 发出声音观察小球跳动效果</p>
-            <p>4. 声音过大时会显示警告</p>
+            <p>1. 点击"开始监听声音"按钮并允许麦克风访问</p>
+            <p>2. 发出声音观察小球跳动效果</p>
+            <p>3. 声音越大，小球跳得越高，移动越快</p>
+            <p>4. 音量超过阈值时会显示警告和声音提示</p>
         </div>
         
         <div class="volume-labels">
@@ -226,12 +279,13 @@
             <div class="volume-level" id="volumeLevel"></div>
         </div>
         
+        <div id="noiseIndicator" class="noise-indicator">音量过高！</div>
         <div id="warning" class="warning">太吵啦！</div>
         <canvas id="canvas"></canvas>
     </div>
     
     <footer>
-        <p>声音响应跳动小球效果 | 使用Web Audio API和Canvas实现</p>
+        <p>声音响应跳动小球效果 | 使用Web Audio API和Canvas实现 | 按空格键切换监听状态</p>
     </footer>
 
     <script>
@@ -239,6 +293,7 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const warning = document.getElementById('warning');
+        const noiseIndicator = document.getElementById('noiseIndicator');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const volumeLevel = document.getElementById('volumeLevel');
@@ -246,122 +301,182 @@
         // 设置Canvas尺寸
         function resizeCanvas() {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 140; // 减去头部和底部高度
+            canvas.height = window.innerHeight - 140;
         }
         
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         
+        // 灰蓝色调色板
+        const colorPalette = [
+            '#778da9', '#6a7f9b', '#5d718d', '#51637f', '#445571',
+            '#9fb4ce', '#8fa4be', '#7f94ae', '#6f849e', '#5f748e',
+            '#b0c4de', '#a0b4ce', '#90a4be', '#8094ae', '#70849e',
+            '#c1d4eb', '#b1c4db', '#a1b4cb', '#91a4bb', '#8194ab',
+            '#d2e5f8', '#c2d5e8', '#b2c5d8', '#a2b5c8', '#92a5b8'
+        ];
+        
         // 小球类
         class Ball {
             constructor() {
-                this.radius = 15 + Math.random() * 25; // 随机大小
+                this.radius = 12 + Math.random() * 30; // 随机大小
                 this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
                 this.y = canvas.height - this.radius; // 初始位置在底部
                 
-                // 浅色调颜色
-                const colors = [
-                    '#A8E6CF', '#DCEDC1', '#FFD3B6', '#FFAAA5', '#FF8B94',
-                    '#D4A5A5', '#9FE6BF', '#6BD5E1', '#6B7AA1', '#C06C84',
-                    '#F8B195', '#F67280', '#C06C84', '#6C5B7B', '#355C7D'
-                ];
-                this.color = colors[Math.floor(Math.random() * colors.length)];
+                // 随机选择灰蓝色调
+                this.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
                 
                 this.baseY = canvas.height - this.radius; // 底部位置
-                this.jumpHeight = 0;
                 this.velocity = 0;
-                this.gravity = 0.3;
-                this.horizontalSpeed = (Math.random() - 0.5) * 2; // 水平移动速度
-                this.responsiveness = 0.5 + Math.random() * 0.5; // 响应度
-                this.jumpDelay = Math.random() * 100; // 跳跃延迟
-                this.targetHeight = this.baseY; // 目标高度
-                this.isJumping = false;
-                this.fallSpeed = 0.5 + Math.random() * 1; // 下落速度
+                this.gravity = 0.2 + Math.random() * 0.3; // 随机重力
+                this.horizontalSpeed = (Math.random() - 0.5) * 4; // 随机水平速度
+                this.responsiveness = 0.3 + Math.random() * 0.7; // 随机响应度
+                this.bounceFactor = 0.6 + Math.random() * 0.3; // 随机弹性
+                this.rotation = 0;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.1; // 随机旋转速度
+                this.pulse = 0;
+                this.pulseSpeed = 0.05 + Math.random() * 0.05; // 随机脉动速度
+                
+                // 小球的个性化行为参数
+                this.behaviorType = Math.floor(Math.random() * 3); // 0: 常规, 1: 轻盈, 2: 沉重
+                if (this.behaviorType === 1) {
+                    this.gravity *= 0.7;
+                    this.responsiveness *= 1.3;
+                } else if (this.behaviorType === 2) {
+                    this.gravity *= 1.3;
+                    this.responsiveness *= 0.7;
+                }
             }
             
-            update(volume, frameCount) {
-                // 根据延迟决定是否响应
-                if (frameCount < this.jumpDelay) return;
-                
+            update(volume, frequencyData) {
                 // 根据音量计算目标高度
-                const targetHeightFactor = volume > 0.05 ? volume * 0.8 : 0;
-                this.targetHeight = this.baseY - (canvas.height * targetHeightFactor);
+                const targetHeightFactor = volume > 0.03 ? volume * 0.9 : 0;
+                const targetHeight = this.baseY - (canvas.height * targetHeightFactor * this.responsiveness);
                 
-                // 如果目标高度低于当前位置，小球应该下落
-                if (this.targetHeight > this.y || volume < 0.05) {
-                    // 音量减小或目标高度高于当前位置，小球下落
-                    if (!this.isJumping) {
-                        this.velocity += this.gravity;
-                        this.y += this.velocity;
-                        
-                        // 如果接近底部，减速
-                        if (this.y > this.baseY - 10) {
-                            this.y = Math.min(this.y, this.baseY);
-                            this.velocity *= 0.9; // 减速效果
-                        }
-                    }
-                } else {
-                    // 音量增大，小球向上跳动
-                    this.isJumping = true;
-                    const jumpForce = (this.baseY - this.targetHeight) * 0.1;
-                    this.velocity = -jumpForce;
-                    this.y += this.velocity;
+                // 根据频率数据影响水平移动
+                if (frequencyData && frequencyData.length > 0) {
+                    const freqIndex = Math.floor(Math.random() * frequencyData.length);
+                    const freqInfluence = frequencyData[freqIndex] / 255;
+                    this.horizontalSpeed += (Math.random() - 0.5) * freqInfluence * 2;
+                    this.horizontalSpeed = Math.max(-5, Math.min(5, this.horizontalSpeed)); // 限制速度范围
+                }
+                
+                // 水平移动
+                this.x += this.horizontalSpeed;
+                
+                // 边界检测和反弹
+                if (this.x < this.radius) {
+                    this.x = this.radius;
+                    this.horizontalSpeed = Math.abs(this.horizontalSpeed) * this.bounceFactor;
+                } else if (this.x > canvas.width - this.radius) {
+                    this.x = canvas.width - this.radius;
+                    this.horizontalSpeed = -Math.abs(this.horizontalSpeed) * this.bounceFactor;
+                }
+                
+                // 垂直运动 - 根据目标高度调整
+                if (this.y > targetHeight) {
+                    // 向上运动或下落减速
+                    const acceleration = (this.y - targetHeight) * 0.05;
+                    this.velocity -= acceleration;
+                }
+                
+                // 应用重力
+                this.velocity += this.gravity;
+                this.y += this.velocity;
+                
+                // 地面碰撞检测
+                if (this.y > this.baseY) {
+                    this.y = this.baseY;
+                    this.velocity = -this.velocity * this.bounceFactor; // 反弹
                     
-                    // 添加一些随机水平移动
-                    this.x += this.horizontalSpeed;
-                    
-                    // 边界检测
-                    if (this.x < this.radius || this.x > canvas.width - this.radius) {
-                        this.horizontalSpeed *= -1;
-                    }
-                    
-                    // 如果到达目标高度，开始下落
-                    if (this.y <= this.targetHeight) {
-                        this.isJumping = false;
+                    // 添加一些随机性
+                    if (Math.abs(this.velocity) < 0.5) {
+                        this.velocity = 0;
                     }
                 }
                 
-                // 确保小球不会超出画布
-                this.y = Math.max(this.radius, Math.min(this.y, canvas.height - this.radius));
+                // 天花板碰撞检测
+                if (this.y < this.radius) {
+                    this.y = this.radius;
+                    this.velocity = Math.abs(this.velocity) * 0.5; // 轻微反弹
+                }
+                
+                // 更新旋转和脉动
+                this.rotation += this.rotationSpeed;
+                this.pulse += this.pulseSpeed;
             }
             
             draw() {
-                // 绘制小球
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
                 
-                // 添加高光效果
+                // 脉动效果
+                const pulseScale = 1 + Math.sin(this.pulse) * 0.1;
+                ctx.scale(pulseScale, pulseScale);
+                
+                // 绘制小球主体
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                
+                // 创建径向渐变
                 const gradient = ctx.createRadialGradient(
-                    this.x - this.radius/3, this.y - this.radius/3, 1,
-                    this.x, this.y, this.radius
+                    -this.radius/3, -this.radius/3, 1,
+                    0, 0, this.radius
                 );
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                gradient.addColorStop(0, lightenColor(this.color, 40));
+                gradient.addColorStop(0.7, this.color);
+                gradient.addColorStop(1, darkenColor(this.color, 20));
                 
                 ctx.fillStyle = gradient;
                 ctx.fill();
                 
-                ctx.closePath();
-                
-                // 添加阴影效果
+                // 添加高光
                 ctx.beginPath();
-                ctx.arc(this.x, this.y + 2, this.radius * 0.9, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.arc(-this.radius/4, -this.radius/4, this.radius/3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
                 ctx.fill();
-                ctx.closePath();
+                
+                ctx.restore();
+                
+                // 添加阴影
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + 3, this.radius * 0.9, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.fill();
             }
+        }
+        
+        // 颜色辅助函数
+        function lightenColor(color, percent) {
+            const num = parseInt(color.slice(1), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.min(255, (num >> 16) + amt);
+            const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+            const B = Math.min(255, (num & 0x0000FF) + amt);
+            return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
+        }
+        
+        function darkenColor(color, percent) {
+            const num = parseInt(color.slice(1), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max(0, (num >> 16) - amt);
+            const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+            const B = Math.max(0, (num & 0x0000FF) - amt);
+            return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
         }
         
         // 创建小球
         const balls = [];
         let frameCount = 0;
         let currentVolume = 0;
+        let currentFrequencyData = null;
+        let isTooNoisy = false;
+        let shushTimeout = null;
         
         function createBalls() {
             balls.length = 0;
-            const ballCount = 30; // 小球数量
+            const ballCount = 60; // 增加小球数量
             
             for (let i = 0; i < ballCount; i++) {
                 balls.push(new Ball());
@@ -381,6 +496,28 @@
         let javascriptNode;
         let isListening = false;
         
+        // "嘘"声音效
+        function playShushSound() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // 设置声音参数
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 2);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 2);
+        }
+        
         // 开始监听声音
         startBtn.addEventListener('click', async () => {
             if (isListening) return;
@@ -396,7 +533,7 @@
                 
                 // 连接分析器
                 microphone.connect(analyser);
-                analyser.fftSize = 256;
+                analyser.fftSize = 512; // 增加FFT大小以获取更多频率数据
                 
                 // 创建JavaScript节点处理音频数据
                 javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
@@ -418,17 +555,35 @@
                     // 标准化音量值 (0-1)
                     currentVolume = average / 256;
                     
+                    // 保存频率数据用于影响小球行为
+                    currentFrequencyData = new Uint8Array(array);
+                    
                     // 平滑音量变化
-                    currentVolume = Math.max(currentVolume, 0.05);
+                    currentVolume = Math.max(currentVolume, 0.02);
                     
                     // 更新音量指示器
                     volumeLevel.style.width = `${Math.min(currentVolume * 100, 100)}%`;
                     
-                    // 检查是否需要显示警告
-                    if (currentVolume > 0.7) {
-                        warning.classList.add('show');
+                    // 检查是否需要显示警告 (降低阈值到0.5)
+                    if (currentVolume > 0.5) {
+                        if (!isTooNoisy) {
+                            isTooNoisy = true;
+                            warning.classList.add('show');
+                            noiseIndicator.classList.add('show');
+                            
+                            // 播放"嘘"声
+                            if (shushTimeout) clearTimeout(shushTimeout);
+                            playShushSound();
+                            shushTimeout = setTimeout(() => {
+                                noiseIndicator.classList.remove('show');
+                            }, 2000);
+                        }
                     } else {
-                        warning.classList.remove('show');
+                        if (isTooNoisy) {
+                            isTooNoisy = false;
+                            warning.classList.remove('show');
+                            noiseIndicator.classList.remove('show');
+                        }
                     }
                 };
                 
@@ -464,24 +619,35 @@
             isListening = false;
             startBtn.disabled = false;
             stopBtn.disabled = true;
+            isTooNoisy = false;
             
             // 隐藏警告和重置音量指示器
             warning.classList.remove('show');
+            noiseIndicator.classList.remove('show');
             volumeLevel.style.width = '0%';
             currentVolume = 0;
+            currentFrequencyData = null;
+            
+            if (shushTimeout) {
+                clearTimeout(shushTimeout);
+                shushTimeout = null;
+            }
         });
         
         // 动画循环
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // 绘制半透明背景
-            ctx.fillStyle = 'rgba(26, 26, 46, 0.2)';
+            // 绘制渐变背景
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#0d1b2a');
+            gradient.addColorStop(1, '#1b263b');
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // 更新和绘制小球
             balls.forEach(ball => {
-                ball.update(currentVolume, frameCount);
+                ball.update(currentVolume, currentFrequencyData);
                 ball.draw();
             });
             
