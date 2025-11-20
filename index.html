@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>声音响应跳动小球 - 高级配色版</title>
+    <title>声音响应跳动小球 - 增重效果版</title>
     <style>
         * {
             margin: 0;
@@ -219,12 +219,45 @@
         .color-option[data-scheme="forest"] {
             background: linear-gradient(45deg, #2A9D8F, #E9C46A, #F4A261, #E76F51);
         }
+        
+        .weight-indicator {
+            position: absolute;
+            bottom: 150px;
+            left: 20px;
+            background: rgba(27, 38, 59, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 10;
+            border: 1px solid rgba(119, 141, 169, 0.3);
+            width: 200px;
+        }
+        
+        .weight-indicator h3 {
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .weight-bar {
+            height: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .weight-level {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(to right, #4cc9f0, #f72585);
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>声音响应跳动小球 - 高级配色版</h1>
-        <p>通过麦克风检测声音，让彩色小球随着音量大小跳动</p>
+        <h1>声音响应跳动小球 - 增重效果版</h1>
+        <p>通过麦克风检测声音，小球会根据音量大小调整重量和跳动幅度</p>
     </header>
     
     <div class="container">
@@ -238,7 +271,7 @@
             <p>1. 点击"开始监听声音"按钮</p>
             <p>2. 允许浏览器访问您的麦克风</p>
             <p>3. 发出声音观察小球跳动效果</p>
-            <p>4. 声音过大时会显示警告</p>
+            <p>4. 声音越大，小球"重量"越大，跳动幅度也越大</p>
         </div>
         
         <div class="color-scheme-selector">
@@ -249,6 +282,14 @@
                 <div class="color-option" data-scheme="ocean" title="海洋色调"></div>
                 <div class="color-option" data-scheme="sunset" title="日落色调"></div>
                 <div class="color-option" data-scheme="forest" title="森林色调"></div>
+            </div>
+        </div>
+        
+        <div class="weight-indicator">
+            <h3>小球重量指示器</h3>
+            <div>当前重量: <span id="weightValue">中等</span></div>
+            <div class="weight-bar">
+                <div class="weight-level" id="weightLevel"></div>
             </div>
         </div>
         
@@ -273,6 +314,8 @@
         const volumeLevel = document.getElementById('volumeLevel');
         const micStatus = document.getElementById('micStatus');
         const colorOptions = document.querySelectorAll('.color-option');
+        const weightValue = document.getElementById('weightValue');
+        const weightLevel = document.getElementById('weightLevel');
         
         // 设置Canvas尺寸
         function resizeCanvas() {
@@ -286,31 +329,26 @@
         // 高级配色方案
         const colorSchemes = {
             pastel: [
-                // 柔和粉彩 - 温柔高级感
                 '#F8BBD9', '#C5CAE9', '#B3E5FC', '#B2EBF2', '#B2DFDB',
                 '#C8E6C9', '#DCEDC8', '#F0F4C3', '#FFECB3', '#FFE0B2',
                 '#FFCCBC', '#D7CCC8', '#CFD8DC', '#F8BBD9', '#E1BEE7'
             ],
             jewel: [
-                // 宝石色调 - 奢华高级感
                 '#6A0572', '#AB83A1', '#3D5A80', '#98C1D9', '#0F4C5C',
                 '#5D8AA8', '#8B9DC3', '#C9C0BB', '#E6BE8A', '#F4A460',
                 '#9C89B8', '#F0A6CA', '#B8B8FF', '#A8DADC', '#457B9D'
             ],
             ocean: [
-                // 海洋色调 - 清新高级感
                 '#1D3557', '#457B9D', '#A8DADC', '#F1FAEE', '#2A9D8F',
                 '#264653', '#2A9D8F', '#E9C46A', '#F4A261', '#E76F51',
                 '#8ECAE6', '#219EBC', '#023047', '#FFB703', '#FB8500'
             ],
             sunset: [
-                // 日落色调 - 温暖高级感
                 '#FF9A8B', '#FF6B6B', '#4ECDC4', '#556270', '#C06C84',
                 '#6C5B7B', '#355C7D', '#F67280', '#C06C84', '#6C5B7B',
                 '#FF8E53', '#FE5F55', '#7BDCB5', '#00D2BE', '#556270'
             ],
             forest: [
-                // 森林色调 - 自然高级感
                 '#2A9D8F', '#E9C46A', '#F4A261', '#E76F51', '#264653',
                 '#588157', '#3A5A40', '#A3B18A', '#DAD7CD', '#344E41',
                 '#606C38', '#283618', '#FEFAE0', '#DDA15E', '#BC6C25'
@@ -319,7 +357,7 @@
         
         let currentColorScheme = 'pastel';
         
-        // 小球类
+        // 小球类 - 添加增重效果
         class Ball {
             constructor() {
                 this.radius = 15 + Math.random() * 25;
@@ -330,9 +368,20 @@
                 this.baseY = canvas.height - this.radius;
                 this.velocityY = 0;
                 this.velocityX = (Math.random() - 0.5) * 4;
-                this.gravity = 0.3;
-                this.responsiveness = 0.5 + Math.random();
-                this.damping = 0.8 + Math.random() * 0.2;
+                
+                // 基础物理属性
+                this.baseGravity = 0.3;
+                this.baseResponsiveness = 0.5 + Math.random();
+                this.baseDamping = 0.8 + Math.random() * 0.2;
+                
+                // 当前物理属性（会根据音量调整）
+                this.gravity = this.baseGravity;
+                this.responsiveness = this.baseResponsiveness;
+                this.damping = this.baseDamping;
+                
+                // 重量相关属性
+                this.weight = 1.0; // 默认重量
+                this.targetWeight = 1.0;
             }
             
             updateColor() {
@@ -341,12 +390,31 @@
                 ];
             }
             
+            // 根据音量调整小球重量
+            updateWeight(volume) {
+                // 音量越大，重量越大（范围：0.5 - 3.0）
+                this.targetWeight = 0.5 + volume * 2.5;
+                
+                // 平滑过渡到目标重量
+                this.weight += (this.targetWeight - this.weight) * 0.1;
+                
+                // 根据重量调整物理属性
+                // 重量越大，重力越大，响应度越小，弹性越小
+                this.gravity = this.baseGravity * this.weight;
+                this.responsiveness = this.baseResponsiveness / this.weight;
+                this.damping = this.baseDamping * (1 / this.weight);
+            }
+            
             update(volume) {
+                // 更新重量
+                this.updateWeight(volume);
+                
                 // 响应音量变化
                 if (volume > 0.05) {
                     // 随机响应 - 不是所有球都同时跳
                     if (Math.random() < this.responsiveness * volume) {
-                        this.velocityY = -volume * 20 - Math.random() * 10;
+                        // 重量越大，初始速度越大（但受重力影响更大）
+                        this.velocityY = -volume * 20 * this.weight - Math.random() * 10;
                     }
                 }
                 
@@ -387,27 +455,36 @@
                     this.x, this.y, this.radius
                 );
                 
+                // 根据重量调整颜色深度（重量越大颜色越深）
+                const weightFactor = Math.min(1.5, this.weight);
+                let baseColor = this.color;
+                
+                // 重量影响颜色深度
+                if (weightFactor > 1) {
+                    baseColor = this.darkenColor(this.color, (weightFactor - 1) * 20);
+                }
+                
                 // 根据配色方案调整渐变
                 if (currentColorScheme === 'pastel') {
                     gradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
-                    gradient.addColorStop(0.7, this.color);
-                    gradient.addColorStop(1, lightenColor(this.color, -20));
+                    gradient.addColorStop(0.7, baseColor);
+                    gradient.addColorStop(1, this.darkenColor(baseColor, 20));
                 } else if (currentColorScheme === 'jewel') {
-                    gradient.addColorStop(0, lightenColor(this.color, 30));
-                    gradient.addColorStop(0.5, this.color);
-                    gradient.addColorStop(1, darkenColor(this.color, 20));
+                    gradient.addColorStop(0, this.lightenColor(baseColor, 30));
+                    gradient.addColorStop(0.5, baseColor);
+                    gradient.addColorStop(1, this.darkenColor(baseColor, 20));
                 } else if (currentColorScheme === 'ocean') {
-                    gradient.addColorStop(0, lightenColor(this.color, 40));
-                    gradient.addColorStop(0.6, this.color);
-                    gradient.addColorStop(1, darkenColor(this.color, 15));
+                    gradient.addColorStop(0, this.lightenColor(baseColor, 40));
+                    gradient.addColorStop(0.6, baseColor);
+                    gradient.addColorStop(1, this.darkenColor(baseColor, 15));
                 } else if (currentColorScheme === 'sunset') {
-                    gradient.addColorStop(0, lightenColor(this.color, 25));
-                    gradient.addColorStop(0.7, this.color);
-                    gradient.addColorStop(1, darkenColor(this.color, 10));
+                    gradient.addColorStop(0, this.lightenColor(baseColor, 25));
+                    gradient.addColorStop(0.7, baseColor);
+                    gradient.addColorStop(1, this.darkenColor(baseColor, 10));
                 } else { // forest
-                    gradient.addColorStop(0, lightenColor(this.color, 35));
-                    gradient.addColorStop(0.6, this.color);
-                    gradient.addColorStop(1, darkenColor(this.color, 15));
+                    gradient.addColorStop(0, this.lightenColor(baseColor, 35));
+                    gradient.addColorStop(0.6, baseColor);
+                    gradient.addColorStop(1, this.darkenColor(baseColor, 15));
                 }
                 
                 ctx.fillStyle = gradient;
@@ -418,31 +495,37 @@
                 ctx.arc(this.x - this.radius/4, this.y - this.radius/4, this.radius/4, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.fill();
+                
+                // 重量越大，阴影越大
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + 3 + (this.weight * 2), this.radius * 0.9, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 0, 0, ${0.1 + this.weight * 0.05})`;
+                ctx.fill();
             }
-        }
-        
-        // 颜色辅助函数
-        function lightenColor(color, percent) {
-            const num = parseInt(color.slice(1), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = Math.min(255, (num >> 16) + amt);
-            const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
-            const B = Math.min(255, (num & 0x0000FF) + amt);
-            return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
-        }
-        
-        function darkenColor(color, percent) {
-            const num = parseInt(color.slice(1), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = Math.max(0, (num >> 16) - amt);
-            const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
-            const B = Math.max(0, (num & 0x0000FF) - amt);
-            return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
+            
+            lightenColor(color, percent) {
+                const num = parseInt(color.slice(1), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = Math.min(255, (num >> 16) + amt);
+                const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+                const B = Math.min(255, (num & 0x0000FF) + amt);
+                return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
+            }
+            
+            darkenColor(color, percent) {
+                const num = parseInt(color.slice(1), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = Math.max(0, (num >> 16) - amt);
+                const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+                const B = Math.max(0, (num & 0x0000FF) - amt);
+                return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
+            }
         }
         
         // 创建小球
         const balls = [];
         let currentVolume = 0;
+        let averageWeight = 1.0;
         
         function createBalls() {
             balls.length = 0;
@@ -507,6 +590,28 @@
                     // 更新UI
                     volumeLevel.style.width = `${Math.min(currentVolume * 100, 100)}%`;
                     
+                    // 计算平均重量并更新指示器
+                    let totalWeight = 0;
+                    balls.forEach(ball => {
+                        totalWeight += ball.weight;
+                    });
+                    averageWeight = totalWeight / balls.length;
+                    
+                    // 更新重量指示器
+                    const weightPercent = ((averageWeight - 0.5) / 2.5) * 100;
+                    weightLevel.style.width = `${weightPercent}%`;
+                    
+                    if (averageWeight < 1.0) {
+                        weightValue.textContent = "轻盈";
+                        weightValue.style.color = "#4ade80";
+                    } else if (averageWeight < 2.0) {
+                        weightValue.textContent = "中等";
+                        weightValue.style.color = "#ffa500";
+                    } else {
+                        weightValue.textContent = "沉重";
+                        weightValue.style.color = "#ff6b6b";
+                    }
+                    
                     if (currentVolume > 0.4) {
                         warning.classList.add('show');
                     } else {
@@ -559,6 +664,9 @@
             micStatus.textContent = "麦克风已停止";
             micStatus.style.color = "#ff6b6b";
             volumeLevel.style.width = '0%';
+            weightLevel.style.width = '0%';
+            weightValue.textContent = "轻盈";
+            weightValue.style.color = "#4ade80";
             warning.classList.remove('show');
             currentVolume = 0;
         });
