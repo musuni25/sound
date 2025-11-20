@@ -12,13 +12,13 @@
         }
         
         body {
-            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
-            background: linear-gradient(to bottom, #1a1a2e, #16213e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: white;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow-x: hidden;
         }
         
         .container {
@@ -37,62 +37,89 @@
         }
         
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
-            text-shadow: 0 0 10px rgba(0, 150, 255, 0.7);
+            text-shadow: 0 0 15px rgba(100, 200, 255, 0.7);
+            background: linear-gradient(to right, #00b4db, #0083b0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .instructions {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
+            border-radius: 15px;
+            padding: 20px;
             margin: 20px auto;
-            max-width: 600px;
-            backdrop-filter: blur(5px);
+            max-width: 700px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
         .instructions p {
-            margin: 10px 0;
-            line-height: 1.5;
+            margin: 12px 0;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+        
+        .volume-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin: 25px 0;
         }
         
         .volume-meter {
-            width: 300px;
-            height: 20px;
+            width: 80%;
+            max-width: 400px;
+            height: 25px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin: 20px auto;
+            border-radius: 12px;
             overflow: hidden;
             position: relative;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
         }
         
         .volume-level {
             height: 100%;
             width: 0%;
             background: linear-gradient(to right, #00b09b, #96c93d, #f9d423, #ff4e50);
-            border-radius: 10px;
-            transition: width 0.2s;
+            border-radius: 12px;
+            transition: width 0.15s;
         }
         
         .volume-threshold {
             position: absolute;
             height: 100%;
-            width: 2px;
-            background: rgba(255, 255, 255, 0.7);
+            width: 3px;
+            background: rgba(255, 255, 255, 0.8);
             right: 20%;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .threshold-label {
+            position: absolute;
+            top: -25px;
+            right: 20%;
+            transform: translateX(50%);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
         }
         
         .canvas-container {
             flex: 1;
             position: relative;
             margin: 20px 0;
+            min-height: 300px;
         }
         
         canvas {
             display: block;
             margin: 0 auto;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.2);
         }
         
         .noise-alert {
@@ -100,7 +127,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 5rem;
+            font-size: 5.5rem;
             font-weight: bold;
             color: #ff4e50;
             text-shadow: 0 0 20px rgba(255, 78, 80, 0.7);
@@ -108,19 +135,34 @@
             transition: opacity 0.3s;
             pointer-events: none;
             z-index: 10;
+            padding: 20px 40px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
         }
         
         .noise-alert.visible {
             opacity: 1;
-            animation: pulse 0.5s infinite alternate;
+            animation: pulse 0.5s infinite alternate, shake 0.2s infinite alternate;
         }
         
         @keyframes pulse {
             from {
                 transform: translate(-50%, -50%) scale(1);
+                text-shadow: 0 0 20px rgba(255, 78, 80, 0.7);
             }
             to {
                 transform: translate(-50%, -50%) scale(1.1);
+                text-shadow: 0 0 30px rgba(255, 78, 80, 1);
+            }
+        }
+        
+        @keyframes shake {
+            from {
+                transform: translate(-50%, -50%) rotate(-1deg);
+            }
+            to {
+                transform: translate(-50%, -50%) rotate(1deg);
             }
         }
         
@@ -132,36 +174,106 @@
         
         .mic-status {
             display: inline-block;
-            padding: 5px 15px;
+            padding: 8px 20px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .mic-status.active {
+            background: rgba(0, 255, 100, 0.2);
+            color: #00ff88;
+        }
+        
+        .mic-status.error {
+            background: rgba(255, 50, 50, 0.2);
+            color: #ff5555;
         }
         
         .start-button {
             background: linear-gradient(to right, #00b09b, #96c93d);
             border: none;
             color: white;
-            padding: 12px 30px;
-            font-size: 1.1rem;
+            padding: 15px 40px;
+            font-size: 1.2rem;
             border-radius: 50px;
             cursor: pointer;
             margin: 20px 0;
             transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+            letter-spacing: 1px;
         }
         
         .start-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
         }
         
         .start-button:active {
             transform: translateY(1px);
         }
+        
+        .start-button:disabled {
+            background: linear-gradient(to right, #555, #777);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .permission-note {
+            max-width: 600px;
+            margin: 10px auto;
+            padding: 10px;
+            background: rgba(255, 200, 0, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .github-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .github-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .instructions {
+                padding: 15px;
+                margin: 15px;
+            }
+            
+            .noise-alert {
+                font-size: 3.5rem;
+                padding: 15px 30px;
+            }
+            
+            .volume-meter {
+                width: 90%;
+            }
+        }
     </style>
 </head>
 <body>
+    <a href="https://github.com" class="github-link" target="_blank">查看源代码</a>
+    
     <div class="container">
         <header>
             <h1>声音响应式跳动小球</h1>
@@ -171,13 +283,22 @@
                 <p>当声音过大时，会显示"太吵啦！"的警告</p>
             </div>
             
-            <button class="start-button" id="startButton">开始声音检测</button>
-            
-            <div class="volume-meter">
-                <div class="volume-level" id="volumeLevel"></div>
-                <div class="volume-threshold" title="噪音阈值"></div>
+            <div class="volume-controls">
+                <button class="start-button" id="startButton">开始声音检测</button>
+                
+                <div class="volume-meter">
+                    <div class="volume-level" id="volumeLevel"></div>
+                    <div class="volume-threshold">
+                        <div class="threshold-label">噪音阈值</div>
+                    </div>
+                </div>
             </div>
+            
             <div class="mic-status" id="micStatus">麦克风未启用</div>
+            
+            <div class="permission-note">
+                注意：首次使用需要允许浏览器访问麦克风。如果未弹出权限请求，请检查浏览器地址栏的麦克风权限设置。
+            </div>
         </header>
         
         <div class="canvas-container">
@@ -232,7 +353,7 @@
                         y: canvas.height - ballRadius,
                         radius: ballRadius,
                         baseY: canvas.height - ballRadius,
-                        color: `hsl(${i * (360 / ballCount)}, 70%, 60%)`,
+                        color: `hsl(${i * (360 / ballCount)}, 80%, 65%)`,
                         speed: 0,
                         jumping: false,
                         jumpPower: 0
@@ -331,6 +452,10 @@
                     analyser = audioContext.createAnalyser();
                     analyser.fftSize = 256;
                     
+                    // 更新麦克风状态
+                    micStatus.textContent = "请求麦克风权限...";
+                    micStatus.className = "mic-status";
+                    
                     // 获取麦克风输入
                     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
                         .then(function(stream) {
@@ -368,18 +493,26 @@
                             };
                             
                             micStatus.textContent = "麦克风已启用 - 正在监听声音";
-                            micStatus.style.background = "rgba(0, 255, 0, 0.2)";
+                            micStatus.className = "mic-status active";
                             isListening = true;
                         })
                         .catch(function(err) {
                             console.error("获取麦克风权限失败: ", err);
                             micStatus.textContent = "无法访问麦克风，请检查权限设置";
-                            micStatus.style.background = "rgba(255, 0, 0, 0.2)";
+                            micStatus.className = "mic-status error";
+                            
+                            // 重新启用按钮以便用户可以重试
+                            startButton.disabled = false;
+                            startButton.textContent = "开始声音检测";
                         });
                 } catch (e) {
                     console.error("音频初始化失败: ", e);
                     micStatus.textContent = "您的浏览器不支持音频功能";
-                    micStatus.style.background = "rgba(255, 0, 0, 0.2)";
+                    micStatus.className = "mic-status error";
+                    
+                    // 重新启用按钮
+                    startButton.disabled = false;
+                    startButton.textContent = "开始声音检测";
                 }
             }
             
