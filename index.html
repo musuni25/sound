@@ -131,7 +131,7 @@
         
         button:disabled {
             background: #6c757d;
-            cursor: not-allowed;
+            cursor: not-allow;
             transform: none;
             box-shadow: none;
         }
@@ -257,7 +257,7 @@
             constructor() {
                 this.radius = 15 + Math.random() * 25; // 随机大小
                 this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
-                this.y = Math.random() * (canvas.height - this.radius * 2) + this.radius;
+                this.y = canvas.height - this.radius; // 初始位置在底部
                 
                 // 浅色调颜色
                 const colors = [
@@ -267,50 +267,62 @@
                 ];
                 this.color = colors[Math.floor(Math.random() * colors.length)];
                 
-                this.baseY = this.y;
+                this.baseY = canvas.height - this.radius; // 底部位置
                 this.jumpHeight = 0;
                 this.velocity = 0;
                 this.gravity = 0.3;
                 this.horizontalSpeed = (Math.random() - 0.5) * 2; // 水平移动速度
                 this.responsiveness = 0.5 + Math.random() * 0.5; // 响应度
                 this.jumpDelay = Math.random() * 100; // 跳跃延迟
+                this.targetHeight = this.baseY; // 目标高度
+                this.isJumping = false;
+                this.fallSpeed = 0.5 + Math.random() * 1; // 下落速度
             }
             
             update(volume, frameCount) {
                 // 根据延迟决定是否响应
                 if (frameCount < this.jumpDelay) return;
                 
-                // 根据音量设置跳跃高度
-                if (volume > 0.05) {
-                    this.jumpHeight = volume * 200 * this.responsiveness;
-                    if (this.velocity >= 0) { // 只有在地面或下落时才起跳
-                        this.velocity = -Math.sqrt(2 * this.gravity * this.jumpHeight);
+                // 根据音量计算目标高度
+                const targetHeightFactor = volume > 0.05 ? volume * 0.8 : 0;
+                this.targetHeight = this.baseY - (canvas.height * targetHeightFactor);
+                
+                // 如果目标高度低于当前位置，小球应该下落
+                if (this.targetHeight > this.y || volume < 0.05) {
+                    // 音量减小或目标高度高于当前位置，小球下落
+                    if (!this.isJumping) {
+                        this.velocity += this.gravity;
+                        this.y += this.velocity;
+                        
+                        // 如果接近底部，减速
+                        if (this.y > this.baseY - 10) {
+                            this.y = Math.min(this.y, this.baseY);
+                            this.velocity *= 0.9; // 减速效果
+                        }
+                    }
+                } else {
+                    // 音量增大，小球向上跳动
+                    this.isJumping = true;
+                    const jumpForce = (this.baseY - this.targetHeight) * 0.1;
+                    this.velocity = -jumpForce;
+                    this.y += this.velocity;
+                    
+                    // 添加一些随机水平移动
+                    this.x += this.horizontalSpeed;
+                    
+                    // 边界检测
+                    if (this.x < this.radius || this.x > canvas.width - this.radius) {
+                        this.horizontalSpeed *= -1;
+                    }
+                    
+                    // 如果到达目标高度，开始下落
+                    if (this.y <= this.targetHeight) {
+                        this.isJumping = false;
                     }
                 }
                 
-                // 应用重力
-                this.velocity += this.gravity;
-                this.y += this.velocity;
-                
-                // 水平移动
-                this.x += this.horizontalSpeed;
-                
-                // 边界检测
-                if (this.x < this.radius || this.x > canvas.width - this.radius) {
-                    this.horizontalSpeed *= -1;
-                }
-                
-                // 地面碰撞检测
-                if (this.y > canvas.height - this.radius) {
-                    this.y = canvas.height - this.radius;
-                    this.velocity = 0;
-                }
-                
-                // 天花板碰撞检测
-                if (this.y < this.radius) {
-                    this.y = this.radius;
-                    this.velocity = 0;
-                }
+                // 确保小球不会超出画布
+                this.y = Math.max(this.radius, Math.min(this.y, canvas.height - this.radius));
             }
             
             draw() {
@@ -332,12 +344,20 @@
                 ctx.fill();
                 
                 ctx.closePath();
+                
+                // 添加阴影效果
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + 2, this.radius * 0.9, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fill();
+                ctx.closePath();
             }
         }
         
         // 创建小球
         const balls = [];
         let frameCount = 0;
+        let currentVolume = 0;
         
         function createBalls() {
             balls.length = 0;
@@ -367,7 +387,7 @@
             
             try {
                 // 获取麦克风权限
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 
                 // 创建音频上下文
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -396,13 +416,16 @@
                     const average = values / array.length;
                     
                     // 标准化音量值 (0-1)
-                    const volume = average / 256;
+                    currentVolume = average / 256;
+                    
+                    // 平滑音量变化
+                    currentVolume = Math.max(currentVolume, 0.05);
                     
                     // 更新音量指示器
-                    volumeLevel.style.width = `${Math.min(volume * 100, 100)}%`;
+                    volumeLevel.style.width = `${Math.min(currentVolume * 100, 100)}%`;
                     
                     // 检查是否需要显示警告
-                    if (volume > 0.7) {
+                    if (currentVolume > 0.7) {
                         warning.classList.add('show');
                     } else {
                         warning.classList.remove('show');
@@ -415,7 +438,7 @@
                 
             } catch (err) {
                 console.error('获取麦克风权限失败:', err);
-                alert('无法访问麦克风，请确保已授予权限。');
+                alert('无法访问麦克风，请确保已授予权限。错误: ' + err.message);
             }
         });
         
@@ -445,6 +468,7 @@
             // 隐藏警告和重置音量指示器
             warning.classList.remove('show');
             volumeLevel.style.width = '0%';
+            currentVolume = 0;
         });
         
         // 动画循环
@@ -457,9 +481,7 @@
             
             // 更新和绘制小球
             balls.forEach(ball => {
-                // 获取当前音量（如果没有监听则设为0）
-                const volume = isListening ? 0.1 : 0; // 这里简化处理，实际应从音频API获取
-                ball.update(volume, frameCount);
+                ball.update(currentVolume, frameCount);
                 ball.draw();
             });
             
