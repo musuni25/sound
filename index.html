@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>声音响应跳动小球</title>
+    <title>声音响应跳动小球 - 高级配色版</title>
     <style>
         * {
             margin: 0;
@@ -160,11 +160,70 @@
             color: #ff6b6b;
             font-weight: bold;
         }
+        
+        .color-scheme-selector {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            background: rgba(27, 38, 59, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 10;
+            border: 1px solid rgba(119, 141, 169, 0.3);
+        }
+        
+        .color-scheme-selector h3 {
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .color-options {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .color-option.active {
+            border-color: #e0e1dd;
+            transform: scale(1.2);
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option[data-scheme="pastel"] {
+            background: linear-gradient(45deg, #A8E6CF, #DCEDC1, #FFD3B6, #FFAAA5);
+        }
+        
+        .color-option[data-scheme="jewel"] {
+            background: linear-gradient(45deg, #6A0572, #AB83A1, #3D5A80, #98C1D9);
+        }
+        
+        .color-option[data-scheme="ocean"] {
+            background: linear-gradient(45deg, #1D3557, #457B9D, #A8DADC, #F1FAEE);
+        }
+        
+        .color-option[data-scheme="sunset"] {
+            background: linear-gradient(45deg, #FF9A8B, #FF6B6B, #4ECDC4, #556270);
+        }
+        
+        .color-option[data-scheme="forest"] {
+            background: linear-gradient(45deg, #2A9D8F, #E9C46A, #F4A261, #E76F51);
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>声音响应跳动小球</h1>
+        <h1>声音响应跳动小球 - 高级配色版</h1>
         <p>通过麦克风检测声音，让彩色小球随着音量大小跳动</p>
     </header>
     
@@ -180,6 +239,17 @@
             <p>2. 允许浏览器访问您的麦克风</p>
             <p>3. 发出声音观察小球跳动效果</p>
             <p>4. 声音过大时会显示警告</p>
+        </div>
+        
+        <div class="color-scheme-selector">
+            <h3>选择配色方案</h3>
+            <div class="color-options">
+                <div class="color-option active" data-scheme="pastel" title="柔和粉彩"></div>
+                <div class="color-option" data-scheme="jewel" title="宝石色调"></div>
+                <div class="color-option" data-scheme="ocean" title="海洋色调"></div>
+                <div class="color-option" data-scheme="sunset" title="日落色调"></div>
+                <div class="color-option" data-scheme="forest" title="森林色调"></div>
+            </div>
         </div>
         
         <div class="status">
@@ -202,6 +272,7 @@
         const stopBtn = document.getElementById('stopBtn');
         const volumeLevel = document.getElementById('volumeLevel');
         const micStatus = document.getElementById('micStatus');
+        const colorOptions = document.querySelectorAll('.color-option');
         
         // 设置Canvas尺寸
         function resizeCanvas() {
@@ -212,27 +283,62 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         
-        // 灰蓝色调色板
-        const colorPalette = [
-            '#778da9', '#6a7f9b', '#5d718d', '#51637f', '#445571',
-            '#9fb4ce', '#8fa4be', '#7f94ae', '#6f849e', '#5f748e',
-            '#b0c4de', '#a0b4ce', '#90a4be', '#8094ae', '#70849e'
-        ];
+        // 高级配色方案
+        const colorSchemes = {
+            pastel: [
+                // 柔和粉彩 - 温柔高级感
+                '#F8BBD9', '#C5CAE9', '#B3E5FC', '#B2EBF2', '#B2DFDB',
+                '#C8E6C9', '#DCEDC8', '#F0F4C3', '#FFECB3', '#FFE0B2',
+                '#FFCCBC', '#D7CCC8', '#CFD8DC', '#F8BBD9', '#E1BEE7'
+            ],
+            jewel: [
+                // 宝石色调 - 奢华高级感
+                '#6A0572', '#AB83A1', '#3D5A80', '#98C1D9', '#0F4C5C',
+                '#5D8AA8', '#8B9DC3', '#C9C0BB', '#E6BE8A', '#F4A460',
+                '#9C89B8', '#F0A6CA', '#B8B8FF', '#A8DADC', '#457B9D'
+            ],
+            ocean: [
+                // 海洋色调 - 清新高级感
+                '#1D3557', '#457B9D', '#A8DADC', '#F1FAEE', '#2A9D8F',
+                '#264653', '#2A9D8F', '#E9C46A', '#F4A261', '#E76F51',
+                '#8ECAE6', '#219EBC', '#023047', '#FFB703', '#FB8500'
+            ],
+            sunset: [
+                // 日落色调 - 温暖高级感
+                '#FF9A8B', '#FF6B6B', '#4ECDC4', '#556270', '#C06C84',
+                '#6C5B7B', '#355C7D', '#F67280', '#C06C84', '#6C5B7B',
+                '#FF8E53', '#FE5F55', '#7BDCB5', '#00D2BE', '#556270'
+            ],
+            forest: [
+                // 森林色调 - 自然高级感
+                '#2A9D8F', '#E9C46A', '#F4A261', '#E76F51', '#264653',
+                '#588157', '#3A5A40', '#A3B18A', '#DAD7CD', '#344E41',
+                '#606C38', '#283618', '#FEFAE0', '#DDA15E', '#BC6C25'
+            ]
+        };
+        
+        let currentColorScheme = 'pastel';
         
         // 小球类
         class Ball {
             constructor() {
                 this.radius = 15 + Math.random() * 25;
                 this.x = Math.random() * canvas.width;
-                this.y = canvas.height + this.radius; // 从底部开始
+                this.y = canvas.height + this.radius;
                 
-                this.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                this.updateColor();
                 this.baseY = canvas.height - this.radius;
                 this.velocityY = 0;
                 this.velocityX = (Math.random() - 0.5) * 4;
                 this.gravity = 0.3;
                 this.responsiveness = 0.5 + Math.random();
                 this.damping = 0.8 + Math.random() * 0.2;
+            }
+            
+            updateColor() {
+                this.color = colorSchemes[currentColorScheme][
+                    Math.floor(Math.random() * colorSchemes[currentColorScheme].length)
+                ];
             }
             
             update(volume) {
@@ -280,9 +386,29 @@
                     this.x - this.radius/3, this.y - this.radius/3, 1,
                     this.x, this.y, this.radius
                 );
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
-                gradient.addColorStop(0.7, this.color);
-                gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
+                
+                // 根据配色方案调整渐变
+                if (currentColorScheme === 'pastel') {
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+                    gradient.addColorStop(0.7, this.color);
+                    gradient.addColorStop(1, lightenColor(this.color, -20));
+                } else if (currentColorScheme === 'jewel') {
+                    gradient.addColorStop(0, lightenColor(this.color, 30));
+                    gradient.addColorStop(0.5, this.color);
+                    gradient.addColorStop(1, darkenColor(this.color, 20));
+                } else if (currentColorScheme === 'ocean') {
+                    gradient.addColorStop(0, lightenColor(this.color, 40));
+                    gradient.addColorStop(0.6, this.color);
+                    gradient.addColorStop(1, darkenColor(this.color, 15));
+                } else if (currentColorScheme === 'sunset') {
+                    gradient.addColorStop(0, lightenColor(this.color, 25));
+                    gradient.addColorStop(0.7, this.color);
+                    gradient.addColorStop(1, darkenColor(this.color, 10));
+                } else { // forest
+                    gradient.addColorStop(0, lightenColor(this.color, 35));
+                    gradient.addColorStop(0.6, this.color);
+                    gradient.addColorStop(1, darkenColor(this.color, 15));
+                }
                 
                 ctx.fillStyle = gradient;
                 ctx.fill();
@@ -290,9 +416,28 @@
                 // 添加高光
                 ctx.beginPath();
                 ctx.arc(this.x - this.radius/4, this.y - this.radius/4, this.radius/4, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.fill();
             }
+        }
+        
+        // 颜色辅助函数
+        function lightenColor(color, percent) {
+            const num = parseInt(color.slice(1), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.min(255, (num >> 16) + amt);
+            const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
+            const B = Math.min(255, (num & 0x0000FF) + amt);
+            return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
+        }
+        
+        function darkenColor(color, percent) {
+            const num = parseInt(color.slice(1), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max(0, (num >> 16) - amt);
+            const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
+            const B = Math.max(0, (num & 0x0000FF) - amt);
+            return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
         }
         
         // 创建小球
@@ -362,7 +507,7 @@
                     // 更新UI
                     volumeLevel.style.width = `${Math.min(currentVolume * 100, 100)}%`;
                     
-                    if (currentVolume > 0.4) { // 降低阈值
+                    if (currentVolume > 0.4) {
                         warning.classList.add('show');
                     } else {
                         warning.classList.remove('show');
@@ -443,6 +588,20 @@
             if (isListening) {
                 stopBtn.click();
             }
+        });
+        
+        // 颜色方案选择
+        colorOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // 移除所有active类
+                colorOptions.forEach(opt => opt.classList.remove('active'));
+                // 添加active类到当前选项
+                option.classList.add('active');
+                // 更新当前颜色方案
+                currentColorScheme = option.dataset.scheme;
+                // 更新所有小球的颜色
+                balls.forEach(ball => ball.updateColor());
+            });
         });
     </script>
 </body>
