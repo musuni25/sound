@@ -3,35 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>声音响应跳动小球</title>
+    <title>声音响应跳动小球 - 改进版</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            background-color: #1a1a2e;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
-            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
             overflow: hidden;
-            height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4cc9f0, #f72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         .container {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             position: relative;
+            overflow: hidden;
         }
         
         #canvas {
-            width: 100%;
-            height: 200px;
             position: absolute;
-            bottom: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
         
         .warning {
@@ -39,18 +63,19 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 4rem;
+            font-size: 5rem;
             font-weight: bold;
             color: #ff4757;
-            text-shadow: 0 0 10px rgba(255, 71, 87, 0.7);
+            text-shadow: 0 0 20px rgba(255, 71, 87, 0.8);
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 10;
+            pointer-events: none;
         }
         
         .warning.show {
             opacity: 1;
-            animation: pulse 0.5s infinite alternate;
+            animation: pulse 0.5s infinite alternate, shake 0.2s infinite alternate;
         }
         
         @keyframes pulse {
@@ -58,7 +83,16 @@
                 transform: translate(-50%, -50%) scale(1);
             }
             to {
-                transform: translate(-50%, -50%) scale(1.1);
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+        
+        @keyframes shake {
+            from {
+                transform: translate(-50%, -50%) translateX(-5px);
+            }
+            to {
+                transform: translate(-50%, -50%) translateX(5px);
             }
         }
         
@@ -67,27 +101,39 @@
             top: 20px;
             left: 20px;
             background: rgba(0, 0, 0, 0.5);
-            padding: 10px 15px;
-            border-radius: 5px;
+            padding: 15px;
+            border-radius: 10px;
             z-index: 10;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         button {
-            background: #4CAF50;
+            background: linear-gradient(to right, #4cc9f0, #4361ee);
             border: none;
             color: white;
-            padding: 8px 16px;
+            padding: 10px 20px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
-            font-size: 14px;
-            margin: 4px 2px;
+            font-size: 16px;
+            margin: 5px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 30px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         
         button:hover {
-            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         .instructions {
@@ -95,37 +141,98 @@
             top: 20px;
             right: 20px;
             background: rgba(0, 0, 0, 0.5);
-            padding: 10px 15px;
-            border-radius: 5px;
+            padding: 15px;
+            border-radius: 10px;
             max-width: 300px;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #4cc9f0;
+        }
+        
+        .volume-meter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
             z-index: 10;
         }
         
-        h1 {
+        .volume-level {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #4cc9f0, #f72585);
+            border-radius: 10px;
+            transition: width 0.1s;
+        }
+        
+        .volume-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 300px;
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        footer {
             text-align: center;
-            margin-top: 20px;
-            color: #4cc9f0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <h1>声音响应跳动小球</h1>
-    
-    <div class="controls">
-        <button id="startBtn">开始监听声音</button>
-        <button id="stopBtn">停止监听</button>
-    </div>
-    
-    <div class="instructions">
-        <p>点击"开始监听声音"按钮，允许浏览器访问您的麦克风。</p>
-        <p>对着麦克风发出声音，小球会根据音量大小跳动。</p>
-        <p>当声音过大时，会显示"太吵啦！"警告。</p>
-    </div>
+    <header>
+        <h1>声音响应跳动小球</h1>
+        <p class="subtitle">通过麦克风检测声音，让彩色小球随着音量大小跳动</p>
+    </header>
     
     <div class="container">
+        <div class="controls">
+            <button id="startBtn">开始监听声音</button>
+            <button id="stopBtn" disabled>停止监听</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>使用说明</h3>
+            <p>1. 点击"开始监听声音"按钮</p>
+            <p>2. 允许浏览器访问您的麦克风</p>
+            <p>3. 发出声音观察小球跳动效果</p>
+            <p>4. 声音过大时会显示警告</p>
+        </div>
+        
+        <div class="volume-labels">
+            <span>安静</span>
+            <span>适中</span>
+            <span>太吵啦！</span>
+        </div>
+        <div class="volume-meter">
+            <div class="volume-level" id="volumeLevel"></div>
+        </div>
+        
         <div id="warning" class="warning">太吵啦！</div>
         <canvas id="canvas"></canvas>
     </div>
+    
+    <footer>
+        <p>声音响应跳动小球效果 | 使用Web Audio API和Canvas实现</p>
+    </footer>
 
     <script>
         // 获取DOM元素
@@ -134,11 +241,12 @@
         const warning = document.getElementById('warning');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
+        const volumeLevel = document.getElementById('volumeLevel');
         
         // 设置Canvas尺寸
         function resizeCanvas() {
             canvas.width = window.innerWidth;
-            canvas.height = 200;
+            canvas.height = window.innerHeight - 140; // 减去头部和底部高度
         }
         
         window.addEventListener('resize', resizeCanvas);
@@ -146,58 +254,97 @@
         
         // 小球类
         class Ball {
-            constructor(x, radius, color) {
-                this.x = x;
-                this.y = canvas.height - radius;
-                this.radius = radius;
-                this.color = color;
-                this.baseY = canvas.height - radius;
+            constructor() {
+                this.radius = 15 + Math.random() * 25; // 随机大小
+                this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+                this.y = Math.random() * (canvas.height - this.radius * 2) + this.radius;
+                
+                // 浅色调颜色
+                const colors = [
+                    '#A8E6CF', '#DCEDC1', '#FFD3B6', '#FFAAA5', '#FF8B94',
+                    '#D4A5A5', '#9FE6BF', '#6BD5E1', '#6B7AA1', '#C06C84',
+                    '#F8B195', '#F67280', '#C06C84', '#6C5B7B', '#355C7D'
+                ];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                
+                this.baseY = this.y;
                 this.jumpHeight = 0;
                 this.velocity = 0;
-                this.gravity = 0.5;
+                this.gravity = 0.3;
+                this.horizontalSpeed = (Math.random() - 0.5) * 2; // 水平移动速度
+                this.responsiveness = 0.5 + Math.random() * 0.5; // 响应度
+                this.jumpDelay = Math.random() * 100; // 跳跃延迟
             }
             
-            update(volume) {
+            update(volume, frameCount) {
+                // 根据延迟决定是否响应
+                if (frameCount < this.jumpDelay) return;
+                
                 // 根据音量设置跳跃高度
-                if (volume > 0.1) {
-                    this.jumpHeight = volume * 150;
-                    this.velocity = -Math.sqrt(2 * this.gravity * this.jumpHeight);
+                if (volume > 0.05) {
+                    this.jumpHeight = volume * 200 * this.responsiveness;
+                    if (this.velocity >= 0) { // 只有在地面或下落时才起跳
+                        this.velocity = -Math.sqrt(2 * this.gravity * this.jumpHeight);
+                    }
                 }
                 
                 // 应用重力
                 this.velocity += this.gravity;
                 this.y += this.velocity;
                 
+                // 水平移动
+                this.x += this.horizontalSpeed;
+                
+                // 边界检测
+                if (this.x < this.radius || this.x > canvas.width - this.radius) {
+                    this.horizontalSpeed *= -1;
+                }
+                
                 // 地面碰撞检测
-                if (this.y > this.baseY) {
-                    this.y = this.baseY;
+                if (this.y > canvas.height - this.radius) {
+                    this.y = canvas.height - this.radius;
+                    this.velocity = 0;
+                }
+                
+                // 天花板碰撞检测
+                if (this.y < this.radius) {
+                    this.y = this.radius;
                     this.velocity = 0;
                 }
             }
             
             draw() {
+                // 绘制小球
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
                 ctx.fill();
+                
+                // 添加高光效果
+                const gradient = ctx.createRadialGradient(
+                    this.x - this.radius/3, this.y - this.radius/3, 1,
+                    this.x, this.y, this.radius
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
                 ctx.closePath();
             }
         }
         
         // 创建小球
         const balls = [];
-        const colors = ['#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0', '#118AB2', '#073B4C', '#EF476F', '#7209B7'];
+        let frameCount = 0;
         
         function createBalls() {
-            balls.length = 0; // 清空现有小球
-            const ballCount = Math.floor(canvas.width / 40);
-            const spacing = canvas.width / ballCount;
+            balls.length = 0;
+            const ballCount = 30; // 小球数量
             
             for (let i = 0; i < ballCount; i++) {
-                const radius = 10 + Math.random() * 10;
-                const x = spacing * i + spacing / 2;
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                balls.push(new Ball(x, radius, color));
+                balls.push(new Ball());
             }
         }
         
@@ -251,8 +398,8 @@
                     // 标准化音量值 (0-1)
                     const volume = average / 256;
                     
-                    // 更新小球位置
-                    updateBalls(volume);
+                    // 更新音量指示器
+                    volumeLevel.style.width = `${Math.min(volume * 100, 100)}%`;
                     
                     // 检查是否需要显示警告
                     if (volume > 0.7) {
@@ -295,36 +442,45 @@
             startBtn.disabled = false;
             stopBtn.disabled = true;
             
-            // 隐藏警告
+            // 隐藏警告和重置音量指示器
             warning.classList.remove('show');
+            volumeLevel.style.width = '0%';
         });
-        
-        // 更新小球位置
-        function updateBalls(volume) {
-            balls.forEach(ball => {
-                ball.update(volume);
-            });
-        }
         
         // 动画循环
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // 绘制地面
-            ctx.fillStyle = '#16213e';
-            ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
+            // 绘制半透明背景
+            ctx.fillStyle = 'rgba(26, 26, 46, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 绘制小球
+            // 更新和绘制小球
             balls.forEach(ball => {
+                // 获取当前音量（如果没有监听则设为0）
+                const volume = isListening ? 0.1 : 0; // 这里简化处理，实际应从音频API获取
+                ball.update(volume, frameCount);
                 ball.draw();
             });
             
+            frameCount++;
             requestAnimationFrame(animate);
         }
         
         // 初始化
-        stopBtn.disabled = true;
         animate();
+        
+        // 添加键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isListening) {
+                    stopBtn.click();
+                } else {
+                    startBtn.click();
+                }
+            }
+        });
     </script>
 </body>
 </html>
